@@ -9,6 +9,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/editor/:RoomId" element={<EditorPage />} />
+        
       </Routes>
     </>
   );
