@@ -1,0 +1,87 @@
+.cont {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #1c1e26;
+  }
+  
+  .form{
+    width: 400px;
+    padding: 40px;
+    background-color: #1c1e26;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  
+  .room-text {
+    color: #ffffff;
+    font-size: 16px;
+    margin-bottom: 40px;
+    padding:  10px;
+  }
+  
+  .custom-input {
+    height: 45px;
+    background-color: #3c3939; 
+    border: 1px solid #6b6464;
+    color: #ffffff; 
+    border-radius: 6px;
+    padding: 0 10px;
+    font-size: 16px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+.custom-input:hover{
+    background-color: #ffffff; 
+    color: #000000;
+}
+
+  .custom-input{
+    color: #000000;
+  }
+  
+  .custom-input::placeholder {
+    color: #c1b7b7;
+  }
+  .custom-input:not(:hover):not(:focus){
+    color: #fff;
+  }
+  
+  .custom-btn {
+    background-color: #ff6700;
+    height: 40px;
+    font-weight: bold;
+    border-radius: 4px;
+  }
+  
+  .custom-btn:hover {
+    background-color: #af4803 !important; 
+  }
+ 
+  .not-id{
+    color: #ffffff;
+    padding-bottom: 10px;
+  }  
+  .create-room-btn {
+    background-color: #4a4a4a; 
+    color: #ffffff; 
+    border: none; 
+    border-radius: 8px; 
+    padding: 10px 20px; 
+    font-weight: bold; 
+    font-size: 16px; 
+    transition: background-color 0.3s ease;
+    margin-top: 9px;
+    text-decoration: none;
+}
+
+.create-room-btn:hover {
+    background-color: #5a5a5a !important;
+}
+
+.create-room-btn:active {
+  background-color: #3b3b3b !important;
+}
+
+  
