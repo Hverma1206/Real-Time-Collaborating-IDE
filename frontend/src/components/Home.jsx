@@ -44,7 +44,7 @@ const Home = () => {
         </div>
         <div className='spacing'>
         <Text className='not-id'> Don't have a Room ID? </Text>
-        <Button className='create-room-btn' block href='#'>
+        <Button type='primary' className='create-room-btn' block href='#'>
           Create a Room
         </Button>
         </div>
