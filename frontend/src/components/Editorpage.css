@@ -1,14 +1,17 @@
 .ant-layout-sider {
-    background: #1c1c1c !important;
-  }
-  
-  .ant-btn-primary {
-    background-color: #4CAF50; /* Customize the green button */
-    border-color: #4CAF50;
-  }
-  
-  .ant-btn-danger {
-    background-color: #f44336; /* Customize the red button */
-    border-color: #f44336;
-  }
-  
+  background: #1c1c1c !important;
+}
+
+.copy-btn {
+  background-color: #4CAF50;
+  border-color: #4CAF50;
+  margin-bottom: 15px;
+  font-weight: bold;
+  margin-top: 50vh;
+}
+
+.leave-btn {
+  background-color: #f44336;
+  border-color: #f44336;
+  font-weight: bold;
+}
