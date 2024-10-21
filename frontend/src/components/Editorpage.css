@@ -1,0 +1,14 @@
+.ant-layout-sider {
+    background: #1c1c1c !important;
+  }
+  
+  .ant-btn-primary {
+    background-color: #4CAF50; /* Customize the green button */
+    border-color: #4CAF50;
+  }
+  
+  .ant-btn-danger {
+    background-color: #f44336; /* Customize the red button */
+    border-color: #f44336;
+  }
+  
