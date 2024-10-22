@@ -13,13 +13,14 @@ const { Option } = Select;
 const languageExtensions = {
   javascript: javascript,
   python: python,
- cpp: cpp,
- java : java,
+  cpp: cpp,
+  java: java,
 };
 
 function Editor() {
   const [code, setCode] = useState('// Start coding here!');
   const [selectedLanguage, setSelectedLanguage] = useState('javascript');
+  const [isCodeModified, setIsCodeModified] = useState(false);
 
   const handleCodeChange = (value) => {
     setCode(value);
@@ -27,6 +28,21 @@ function Editor() {
 
   const handleLanguageChange = (language) => {
     setSelectedLanguage(language);
+  };
+
+  const handleEditorFocus = () => {
+    if (!isCodeModified) {
+      setCode('');
+      setIsCodeModified(true);
+    }
+  };
+
+  const handleEditorBlur = () => {
+    // If the editor is empty on blur, set the placeholder text
+    if (code.trim() === '') {
+      setCode('// Start coding here!');
+      setIsCodeModified(false); // Reset the modified state
+    }
   };
 
   return (
@@ -39,9 +55,8 @@ function Editor() {
         >
           <Option value="javascript">JavaScript</Option>
           <Option value="python">Python</Option>
-        <Option value="cpp">C++</Option>
-        <Option value="java">java</Option>
-
+          <Option value="cpp">C++</Option>
+          <Option value="java">Java</Option>
         </Select>
       </div>
 
@@ -51,6 +66,8 @@ function Editor() {
         theme="dark"
         extensions={[languageExtensions[selectedLanguage]()]}
         onChange={handleCodeChange}
+        onFocus={handleEditorFocus}
+        onBlur={handleEditorBlur}
       />
     </div>
   );
