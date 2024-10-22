@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Layout, Button, List, Typography, Divider } from 'antd';
 import './Editorpage.css';
 import Client from './Client.jsx';
+import Editor from './Editor.jsx';
 
 const { Sider, Content } = Layout;
 const { Title } = Typography;
@@ -9,7 +10,12 @@ const { Title } = Typography;
 export default function EditorPage() {
   const [clients, setClients] = useState([
     { SocketId: 1, username: "Himanshu" },
-    { SocketId: 2, username: "Verma" }
+    { SocketId: 2, username: "Verma" },
+
+    { SocketId: 3, username: "Pranay" },
+    { SocketId: 4, username: "Jain" },
+
+
   ])
   return (
     <Layout style={{ height: '100vh' }}>
@@ -84,7 +90,7 @@ export default function EditorPage() {
               padding: '20px',
             }}
           >
-            <p style={{ color: '#fff', fontSize: '16px' }}>Your collaborative code editor will be here.</p>
+           <Editor />
           </div>
         </Content>
       </Layout>
