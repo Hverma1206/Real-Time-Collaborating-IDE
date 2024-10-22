@@ -1,3 +1,4 @@
+import React from 'react';
 import "./App.css";
 import EditorPage from "./components/EditorPage";
 import Home from "./components/Home";
