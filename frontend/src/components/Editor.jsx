@@ -5,8 +5,9 @@ import { javascript } from '@codemirror/lang-javascript';
 import { python } from '@codemirror/lang-python';
 import { cpp } from '@codemirror/lang-cpp';
 import { java } from '@codemirror/lang-java';
+import { dracula } from '@uiw/codemirror-theme-dracula'; 
 
-import 'codemirror/theme/material.css';
+import '@uiw/codemirror-theme-dracula/style.css'; 
 
 const { Option } = Select;
 
@@ -38,10 +39,9 @@ function Editor() {
   };
 
   const handleEditorBlur = () => {
-    // If the editor is empty on blur, set the placeholder text
     if (code.trim() === '') {
       setCode('// Start coding here!');
-      setIsCodeModified(false); // Reset the modified state
+      setIsCodeModified(false);
     }
   };
 
@@ -63,7 +63,7 @@ function Editor() {
       <CodeMirror
         value={code}
         height="100%"
-        theme="dark"
+        theme={dracula}
         extensions={[languageExtensions[selectedLanguage]()]}
         onChange={handleCodeChange}
         onFocus={handleEditorFocus}
