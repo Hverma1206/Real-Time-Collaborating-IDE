@@ -7,11 +7,16 @@
   border-color: #4CAF50;
   margin-bottom: 15px;
   font-weight: bold;
-  margin-top: 50vh;
+}
+.copy-btn:hover{
+  background-color: #39833b !important;
 }
 
 .leave-btn {
   background-color: #f44336;
   border-color: #f44336;
   font-weight: bold;
+}
+.leave-btn:hover{
+  background-color: #be362d !important;
 }

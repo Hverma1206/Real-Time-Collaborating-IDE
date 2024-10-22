@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { Layout, Button, List, Typography, Divider } from 'antd';
 import './Editorpage.css';
-import Client  from './Client.jsx';
+import Client from './Client.jsx';
 
 const { Sider, Content } = Layout;
 const { Title } = Typography;
 
 export default function EditorPage() {
-const [clients,setClients] = useState([
-  {SocketId : 1, username: "Himanshu"},
-  {SocketId : 2, username: "Verma"}
-])
+  const [clients, setClients] = useState([
+    { SocketId: 1, username: "Himanshu" },
+    { SocketId: 2, username: "Verma" }
+  ])
   return (
     <Layout style={{ height: '100vh' }}>
       {/* Sidebar*/}
@@ -29,27 +29,27 @@ const [clients,setClients] = useState([
         <div>
           <Title level={3} style={{ color: '#fff', marginBottom: '20px', textAlign: 'center' }}>
             LumosHub          </Title>
-        
+
         </div>
         <Divider style={{ backgroundColor: '#3a3a3a' }} />
 
-<div className='member-avatar'>
-{clients.map((client)=>(
-  <Client key={clients.SocketId} username={client.username} />
-))}
+        <div className='member-avatar'>
+          {clients.map((client) => (
+            <Client key={clients.SocketId} username={client.username} />
+          ))}
 
-</div>
+        </div>
 
 
         <div >
-        <Divider style={{ backgroundColor: '#3a3a3a' }} />
+          <Divider style={{ backgroundColor: '#3a3a3a' }} />
 
           <Button
             className="copy-btn"
             type="primary"
             block
           >
-            
+
             Copy Room ID
           </Button>
           <Button
