@@ -33,7 +33,7 @@ function Editor() {
   const handleEditorFocus = () => {
     if (!isCodeModified) {
       setCode('');
-      setIsCodeModified(true);
+      setIsCodeModified(true)
     }
   };
 
