@@ -7,7 +7,6 @@ import { cpp } from '@codemirror/lang-cpp';
 import { java } from '@codemirror/lang-java';
 import { dracula } from '@uiw/codemirror-theme-dracula'; 
 
-import '@uiw/codemirror-theme-dracula/style.css'; 
 
 const { Option } = Select;
 
