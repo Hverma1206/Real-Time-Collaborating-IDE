@@ -1,21 +1,8 @@
 import React, { useState } from 'react';
 import { Select } from 'antd';
-import CodeMirror from '@uiw/react-codemirror';
-import { javascript } from '@codemirror/lang-javascript';
-import { python } from '@codemirror/lang-python';
-import { cpp } from '@codemirror/lang-cpp';
-import { java } from '@codemirror/lang-java';
-import { dracula } from '@uiw/codemirror-theme-dracula'; 
-
+import { MonacoEditor } from '@monaco-editor/react';
 
 const { Option } = Select;
-
-const languageExtensions = {
-  javascript: javascript,
-  python: python,
-  cpp: cpp,
-  java: java,
-};
 
 function Editor() {
   const [code, setCode] = useState('// Start coding here!');
@@ -59,14 +46,19 @@ function Editor() {
         </Select>
       </div>
 
-      <CodeMirror
-        value={code}
+      <MonacoEditor
         height="100%"
-        theme={dracula}
-        extensions={[languageExtensions[selectedLanguage]()]}
+        language={selectedLanguage}
+        value={code}
         onChange={handleCodeChange}
         onFocus={handleEditorFocus}
         onBlur={handleEditorBlur}
+        options={{
+          selectOnLineNumbers: true,
+          minimap: {
+            enabled: false,
+          },
+        }}
       />
     </div>
   );

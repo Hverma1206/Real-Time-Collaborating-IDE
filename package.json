@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@monaco-editor/react": "^4.6.0",
     "color-hash": "^2.0.2"
   }
 }
