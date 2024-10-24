@@ -1,11 +1,11 @@
-import React from 'react';
-import { Avatar } from 'antd';
-import ColorHash from 'color-hash';
+import React from 'react'
+import { Avatar } from 'antd'
+import ColorHash from 'color-hash'
 
-const colorHash = new ColorHash();
+const colorHash = new ColorHash()
 
 export default function Client({ username }) {
-  const avatarColor = colorHash.hex(username); 
+  const avatarColor = colorHash.hex(username);
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
@@ -20,5 +20,5 @@ export default function Client({ username }) {
       </Avatar>
       <span>{username}</span>
     </div>
-  );
+  )
 }
