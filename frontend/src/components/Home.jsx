@@ -7,7 +7,7 @@ const { Title, Text } = Typography;
 
 const Home = () => {
   const [roomId, setRoomId] = useState("");
-  const [username, setUsername] = useState("");
+  const [form] = Form.useForm(); 
 
   const onFinish = (values) => {
     console.log('Form Values:', values);
@@ -15,8 +15,9 @@ const Home = () => {
 
   const generateRoomId = (e) => {
     e.preventDefault();
-    const id = uuid();
-    setRoomId(id); // Set generated Room ID in state
+    const id = uuid().slice(0, 6); 
+    setRoomId(id);
+    form.setFieldsValue({ RoomID: id }); 
   };
 
   return (
@@ -26,6 +27,7 @@ const Home = () => {
         <Text className='room-text'>Enter your Room ID</Text>
         <div style={{ marginTop: '20px' }}>
           <Form
+            form={form} 
             name='join_room'
             onFinish={onFinish}
             layout='vertical'
@@ -38,8 +40,8 @@ const Home = () => {
               <Input
                 placeholder='Room ID'
                 className='custom-input'
-                value={roomId} // Bind the input value to roomId state
-                onChange={(e) => setRoomId(e.target.value)} // Allow manual input too
+                value={roomId}
+                onChange={(e) => setRoomId(e.target.value)} 
               />
             </Form.Item>
             <Form.Item
@@ -49,8 +51,6 @@ const Home = () => {
               <Input
                 placeholder='Username'
                 className='custom-input'
-                value={username}
-                onChange={(e) => setUsername(e.target.value)} // Update username state
               />
             </Form.Item>
             <Form.Item>
@@ -66,7 +66,7 @@ const Home = () => {
             type='primary'
             className='create-room-btn'
             block
-            onClick={generateRoomId} 
+            onClick={generateRoomId}
           >
             Create a Room
           </Button>
