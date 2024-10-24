@@ -1,25 +1,42 @@
-import React, { useState } from 'react';
-import './Home.css';
-import { v4 as uuid } from 'uuid';
-import { Form, Input, Button, Typography } from 'antd';
+import React, { useState } from 'react'
+import './Home.css'
+import { v4 as uuid } from 'uuid'
+import { useNavigate } from 'react-router-dom'
+import { Form, Input, Button, Typography } from 'antd'
+import toast from 'react-hot-toast';
+
 
 const { Title, Text } = Typography;
 
 const Home = () => {
   const [roomId, setRoomId] = useState("");
-  const [form] = Form.useForm(); 
+  const [form] = Form.useForm();
+  const [username, setUsername] = useState("")
+  const navigate = useNavigate()
 
   const onFinish = (values) => {
-    console.log('Form Values:', values);
+    console.log('Form Values:', values)
   };
 
   const generateRoomId = (e) => {
-    e.preventDefault();
-    const id = uuid().slice(0, 6); 
-    setRoomId(id);
-    form.setFieldsValue({ RoomID: id }); 
-  };
+    e.preventDefault()
+    const id = uuid().slice(0, 6);
+    setRoomId(id)
+    form.setFieldsValue({ RoomID: id })
+    toast.success(("Room Id is generated"))
+  }
 
+  const joinRoom = () => {
+    if (!roomId || !username) {
+      toast.error("Both the field is required!")
+      return;
+    }
+    navigate(`/editor/${roomId}`,{
+      state : {username}, 
+    })
+    toast.success(("Room is created"))
+
+  }
   return (
     <div className='cont'>
       <div className='form'>
@@ -27,13 +44,13 @@ const Home = () => {
         <Text className='room-text'>Enter your Room ID</Text>
         <div style={{ marginTop: '20px' }}>
           <Form
-            form={form} 
+            form={form}
             name='join_room'
             onFinish={onFinish}
             layout='vertical'
             className='Form'
           >
-            <Form.Item 
+            <Form.Item
               name="RoomID"
               rules={[{ required: true, message: 'Please Input Your Room ID!' }]}
             >
@@ -41,7 +58,7 @@ const Home = () => {
                 placeholder='Room ID'
                 className='custom-input'
                 value={roomId}
-                onChange={(e) => setRoomId(e.target.value)} 
+                onChange={(e) => setRoomId(e.target.value)}
               />
             </Form.Item>
             <Form.Item
@@ -51,10 +68,14 @@ const Home = () => {
               <Input
                 placeholder='Username'
                 className='custom-input'
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
               />
             </Form.Item>
             <Form.Item>
-              <Button type='primary' htmlType='submit' block className='custom-btn'>
+              <Button type='primary' htmlType='submit' block className='custom-btn'
+                onClick={joinRoom}
+              >
                 Join
               </Button>
             </Form.Item>
@@ -73,7 +94,7 @@ const Home = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
 export default Home;

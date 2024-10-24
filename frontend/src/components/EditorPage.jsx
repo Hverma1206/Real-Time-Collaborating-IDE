@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Layout, Button, List, Typography, Divider } from 'antd';
+import { Layout, Button, Divider, Typography } from 'antd';
 import './Editorpage.css';
 import Client from './Client.jsx';
 import Editor from './Editor.jsx';
@@ -11,15 +11,13 @@ export default function EditorPage() {
   const [clients, setClients] = useState([
     { SocketId: 1, username: "Himanshu" },
     { SocketId: 2, username: "Verma" },
+    { SocketId: 3, username: "" },
+    { SocketId: 4, username: "" },
+  ]);
 
-    { SocketId: 3, username: "Pranay" },
-    { SocketId: 4, username: "Jain" },
-
-
-  ])
   return (
     <Layout style={{ height: '100vh' }}>
-      {/* Sidebar*/}
+      {/* Sidebar */}
       <Sider
         width={250}
         style={{
@@ -32,45 +30,31 @@ export default function EditorPage() {
           boxShadow: '2px 0 5px rgba(0,0,0,0.1)',
         }}
       >
-        <div>
+        <div style={{ flexGrow: 1 }}>
           <Title level={3} style={{ color: '#fff', marginBottom: '20px', textAlign: 'center' }}>
-            LumosHub          </Title>
-
-        </div>
-        <Divider style={{ backgroundColor: '#3a3a3a' }} />
-
-        <div className='member-avatar'>
-          {clients.map((client) => (
-            <Client key={clients.SocketId} username={client.username} />
-          ))}
-
-        </div>
-
-
-        <div >
+            LumosHub
+          </Title>
           <Divider style={{ backgroundColor: '#3a3a3a' }} />
+          <div className='member-avatar'>
+            {clients.map((client) => (
+              <Client key={client.SocketId} username={client.username} />
+            ))}
+          </div>
+        </div>
 
-          <Button
-            className="copy-btn"
-            type="primary"
-            block
-          >
-
+        {/* Buttons at the bottom */}
+        <div style={{ marginTop: 'auto' }}>
+          <Divider style={{ backgroundColor: '#3a3a3a' }} />
+          <Button className="copy-btn" type="primary" block>
             Copy Room ID
           </Button>
-          <Button
-            className="leave-btn"
-            type="danger"
-            block
-
-          >
+          <Button className="leave-btn" type="danger" block>
             Leave Room
           </Button>
         </div>
       </Sider>
 
-
-      {/* Code Editor*/}
+      {/* Code Editor */}
       <Layout>
         <Content
           style={{
@@ -90,7 +74,7 @@ export default function EditorPage() {
               padding: '20px',
             }}
           >
-           <Editor />
+            <Editor />
           </div>
         </Content>
       </Layout>
