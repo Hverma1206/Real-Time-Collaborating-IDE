@@ -1,13 +1,23 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Layout, Button, Divider, Typography } from 'antd';
 import './Editorpage.css';
 import Client from './Client.jsx';
 import Editor from './Editor.jsx';
+import { initSocket } from '../socket.js';
 
 const { Sider, Content } = Layout;
 const { Title } = Typography;
 
 export default function EditorPage() {
+  const socketRef = useRef(null)
+  useEffect(() => {
+    const init = async () => {
+      socketRef.current = await initSocket
+    }
+
+    init();
+
+  }, [])
   const [clients, setClients] = useState([
     { SocketId: 1, username: "Himanshu" },
     { SocketId: 2, username: "Verma" },
