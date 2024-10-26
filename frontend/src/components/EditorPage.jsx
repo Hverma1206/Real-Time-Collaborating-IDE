@@ -13,6 +13,10 @@ export default function EditorPage() {
   useEffect(() => {
     const init = async () => {
       socketRef.current = await initSocket
+      socketRef.current = join("Himanshu",{
+        roomId,
+        username 
+      })
     }
 
     init();
