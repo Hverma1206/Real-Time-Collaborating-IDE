@@ -4,7 +4,7 @@ import './Editorpage.css';
 import Client from './Client.jsx';
 import Editor from './Editor.jsx';
 import { initSocket } from '../socket.js';
-import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import { useNavigate, useLocation, useParams, Navigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 const { Sider, Content } = Layout;
@@ -14,10 +14,10 @@ export default function EditorPage() {
   const socketRef = useRef(null)
   const location = useLocation();
   const {roomId} = useParams()
-  const navigate = useNavigate
+  const navigate = useNavigate()
   useEffect(() => {
     const init = async () => {
-      socketRef.current = await initSocket
+      socketRef.current = await initSocket();
       socketRef.current.on('connect_error', (err) => handleError(err))
       socketRef.current.on('connect_failed', (err) => handleError(err))
 
@@ -41,7 +41,9 @@ export default function EditorPage() {
     { SocketId: 3, username: "" },
     { SocketId: 4, username: "" },
   ]);
-
+if(!location.state){
+  return <Navigate to ="/" />
+}
   return (
     <Layout style={{ height: '100vh' }}>
       <Sider
