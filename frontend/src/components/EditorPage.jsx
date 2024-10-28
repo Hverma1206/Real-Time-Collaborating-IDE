@@ -4,7 +4,8 @@ import './Editorpage.css';
 import Client from './Client.jsx';
 import Editor from './Editor.jsx';
 import { initSocket } from '../socket.js';
-import { useLocation, useParams } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const { Sider, Content } = Layout;
 const { Title } = Typography;
@@ -13,10 +14,19 @@ export default function EditorPage() {
   const socketRef = useRef(null)
   const location = useLocation();
   const {roomId} = useParams()
+  const navigate = useNavigate
   useEffect(() => {
     const init = async () => {
       socketRef.current = await initSocket
-      socketRef.current.emit('join',{
+      socketRef.current.on('connect_error', (err) => handleError(err))
+      socketRef.current.on('connect_failed', (err) => handleError(err))
+
+      const handleError = (e)=>{
+        console.log('socket error =>', e)
+        toast.error("Socket Connection Failed")
+        navigate('/')
+      }
+      socketRef.current.emit("join",{
         roomId,
         username: location.state?.username,
       })
@@ -34,7 +44,6 @@ export default function EditorPage() {
 
   return (
     <Layout style={{ height: '100vh' }}>
-      {/* Sidebar */}
       <Sider
         width={250}
         style={{
@@ -59,7 +68,6 @@ export default function EditorPage() {
           </div>
         </div>
 
-        {/* Buttons at the bottom */}
         <div style={{ marginTop: 'auto' }}>
           <Divider style={{ backgroundColor: '#3a3a3a' }} />
           <Button className="copy-btn" type="primary" block>
@@ -71,7 +79,6 @@ export default function EditorPage() {
         </div>
       </Sider>
 
-      {/* Code Editor */}
       <Layout>
         <Content
           style={{
