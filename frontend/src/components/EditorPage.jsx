@@ -4,18 +4,21 @@ import './Editorpage.css';
 import Client from './Client.jsx';
 import Editor from './Editor.jsx';
 import { initSocket } from '../socket.js';
+import { useLocation, useParams } from 'react-router-dom';
 
 const { Sider, Content } = Layout;
 const { Title } = Typography;
 
 export default function EditorPage() {
   const socketRef = useRef(null)
+  const location = useLocation();
+  const {roomId} = useParams()
   useEffect(() => {
     const init = async () => {
       socketRef.current = await initSocket
-      socketRef.current = join("Himanshu",{
+      socketRef.current.emit('join',{
         roomId,
-        username 
+        username: location.state?.username,
       })
     }
 
