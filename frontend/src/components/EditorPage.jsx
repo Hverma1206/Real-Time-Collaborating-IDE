@@ -26,20 +26,15 @@ export default function EditorPage() {
         toast.error("Socket Connection Failed")
         navigate('/')
       }
-      socketRef.current.emit("join",{
-        roomId,
-        username: location.state?.username,
-      })
-    }
+      socketRef.current.emit("join",
+     username =   ({clients, username, SocketId});
 
-    init();
+      )}
 
-  }, [])
   const [clients, setClients] = useState([
     { SocketId: 1, username: "Himanshu" },
     { SocketId: 2, username: "Verma" },
-    { SocketId: 3, username: "" },
-    { SocketId: 4, username: "" },
+    
   ]);
 if(!location.state){
   return <Navigate to ="/" />
