@@ -9,36 +9,61 @@ import toast from 'react-hot-toast';
 
 const { Sider, Content } = Layout;
 const { Title } = Typography;
-
+  
 export default function EditorPage() {
-  const socketRef = useRef(null)
+  const socketRef = useRef(null);
   const location = useLocation();
-  const {roomId} = useParams()
-  const navigate = useNavigate()
+  const { roomId } = useParams();
+  const navigate = useNavigate();
+
   useEffect(() => {
     const init = async () => {
       socketRef.current = await initSocket();
-      socketRef.current.on('connect_error', (err) => handleError(err))
-      socketRef.current.on('connect_failed', (err) => handleError(err))
+      socketRef.current.on('connect_error', (err) => handleError(err));
+      socketRef.current.on('connect_failed', (err) => handleError(err));
 
-      const handleError = (e)=>{
-        console.log('socket error =>', e)
-        toast.error("Socket Connection Failed")
-        navigate('/')
+      const handleError = (e) => {
+        console.log('socket error =>', e);
+        toast.error("Socket Connection Failed");
+        navigate('/');
+      };
+
+      socketRef.current.emit('joined', {
+        roomId,
+        username: location.state?.username,
+        
+      });
+
+      //joined text to everyone except person who joined
+      socketRef.current.on('join', ({  username }) => {
+if(username !== location.state.username){
+  toast.success(`${username} joined`)
+}
+      });
+
+socketRef.current.on('joiend' ({clients, username, socketID) }
+    )
+
+
+    init();
+
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
       }
-      socketRef.current.emit("join",
-     username =   ({clients, username, SocketId});
-
-      )}
+    };
+  }, [navigate, roomId]);
 
   const [clients, setClients] = useState([
-    { SocketId: 1, username: "Himanshu" },
-    { SocketId: 2, username: "Verma" },
-    
+    { SocketId: 1, username: 'Himanshu' },
+    { SocketId: 2, username: 'Verma' },
   ]);
-if(!location.state){
-  return <Navigate to ="/" />
-}
+
+  if (!location.state) {
+    return <Navigate to="/" />;
+  }
+
   return (
     <Layout style={{ height: '100vh' }}>
       <Sider
