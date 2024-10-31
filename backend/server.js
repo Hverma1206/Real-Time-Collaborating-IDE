@@ -1,9 +1,9 @@
-const express = require('express')
+const express = require('express');
 const {Server} = require('socket.io')
 const app = express()
 const http = require('http')
-const server = http.createServer(app)
-const io = new Server(server)
+const server = http.createServer(app);
+const io = new Server(server);
 
 const userSocketMap = {}
 const getAllCOnnectedClients = (roomId) =>{
@@ -11,7 +11,7 @@ const getAllCOnnectedClients = (roomId) =>{
     (socketId) => {
       return {
         socketId,
-        username: userSocketMap[socketId],
+        username: userSocketMap[socketId],;
       }
     }
   )
@@ -21,9 +21,9 @@ const getAllCOnnectedClients = (roomId) =>{
 io.on("connection" , (socket) => {
 
   socket.on('join', ({roomId, username}) =>{
-   userSocketMap[socket.id] = username
-   socket.join(roomId)
-   const clients = getAllCOnnectedClients(roomId)
+   userSocketMap[socket.id] = username;
+   socket.join(roomId);
+   const clients = getAllCOnnectedClients(roomId);
    clients.forEach(({socketId})=>{
     io.to(socketId).emit('joined'),{
       clients,
@@ -34,6 +34,6 @@ io.on("connection" , (socket) => {
    }
   )    
   })
-})
-const PORT = process.env.PORT || 5000
-server.listen(PORT, ()=> console.log("Server is running"))
+});
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, ()=> console.log("Server is running"));
