@@ -15,37 +15,33 @@ export default function EditorPage() {
   const location = useLocation();
   const { roomId } = useParams();
   const navigate = useNavigate();
-
-  // Check if the username exists in location.state
   const username = location.state?.username;
 
-  // Redirect to home if username is missing
+  const [clients, setClients] = useState([]);
+
   useEffect(() => {
     if (!username) {
       toast.error('Username is missing, redirecting to the home page.');
-      setTimeout(() => navigate('/'), 0); // Delay to prevent rendering issues
+      setTimeout(() => navigate('/'), 0);
     }
   }, [username, navigate]);
-
-  const [clients, setClients] = useState([]);
 
   useEffect(() => {
     const init = async () => {
       try {
         socketRef.current = await initSocket();
-  
+
         const handleError = (e) => {
           console.log('Socket error:', e);
           toast.error('Socket Connection Failed');
           navigate('/');
         };
-  
+
         socketRef.current.on('connect_error', handleError);
         socketRef.current.on('connect_failed', handleError);
-  
+
         socketRef.current.emit('join', { roomId, username });
-  
-        // Listen for 'joined' event with a check for data presence
+
         socketRef.current.on('joined', (data) => {
           if (data && data.clients) {
             const { clients, username: joinedUser } = data;
@@ -53,26 +49,44 @@ export default function EditorPage() {
             if (joinedUser !== username) {
               toast.success(`${joinedUser} joined the room`);
             }
-          } else {
-            console.error('Joined event received incomplete data:', data);
           }
         });
+
+        // Handle user leaving the room
+        socketRef.current.on('left', ({ username }) => {
+          setClients((prevClients) => prevClients.filter((client) => client.username !== username));
+          toast(`${username} has left the room`);
+        });
+
+        // Handle user disconnection
+        socketRef.current.on('disconnected', ({ socketId, username }) => {
+          setClients((prevClients) => prevClients.filter((client) => client.socketId !== socketId));
+          toast(`${username} has disconnected`);
+        });
+
       } catch (error) {
         console.error('Failed to initialize socket', error);
         toast.error('Failed to connect to the server.');
         navigate('/');
       }
     };
-  
+
     init();
-  
+
     return () => {
       if (socketRef.current) {
+        socketRef.current.emit('leave', { roomId, username });
         socketRef.current.disconnect();
       }
     };
   }, [navigate, roomId, username]);
-  
+
+  const handleLeaveRoom = () => {
+    if (socketRef.current) {
+      socketRef.current.emit('leave', { roomId, username });
+      navigate('/');
+    }
+  };
 
   return (
     <Layout style={{ height: '100vh' }}>
@@ -105,7 +119,7 @@ export default function EditorPage() {
           <Button className="copy-btn" type="primary" block>
             Copy Room ID
           </Button>
-          <Button className="leave-btn" type="danger" block>
+          <Button className="leave-btn" type="danger" block onClick={handleLeaveRoom}>
             Leave Room
           </Button>
         </div>
