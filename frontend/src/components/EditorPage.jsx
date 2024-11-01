@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 const { Sider, Content } = Layout;
 const { Title } = Typography;
   
+
 export default function EditorPage() {
   const socketRef = useRef(null);
   const location = useLocation();
@@ -18,42 +19,51 @@ export default function EditorPage() {
 
   useEffect(() => {
     const init = async () => {
-      socketRef.current = await initSocket();
-      socketRef.current.on('connect_error', (err) => handleError(err));
-      socketRef.current.on('connect_failed', (err) => handleError(err));
+      try {
+        // Initialize the socket connection
+        socketRef.current = await initSocket();
 
-      const handleError = (e) => {
-        console.log('socket error =>', e);
-        toast.error("Socket Connection Failed");
+        // Handle socket connection errors
+        const handleError = (e) => {
+          console.log('socket error =>', e);
+          toast.error("Socket Connection Failed");
+          navigate('/');
+        };
+
+        socketRef.current.on('connect_error', handleError);
+        socketRef.current.on('connect_failed', handleError);
+
+        // Emit the joined event to notify server of the new participant
+        socketRef.current.emit('joined', {
+          roomId,
+          username: location.state?.username,
+        });
+
+        // Notify others in the room when someone joins
+        socketRef.current.on('join', ({ username }) => {
+          if (username !== location.state?.username) {
+            toast.success(`${username} joined`);
+          }
+        });
+      } catch (error) {
+        console.error("Failed to initialize socket", error);
+        toast.error("Failed to connect to the server.");
         navigate('/');
-      };
-
-      socketRef.current.emit('joined', {
-        roomId,
-        username: location.state?.username,
-        
-      });
-
-      //joined text to everyone except person who joined
-      socketRef.current.on('join', ({  username }) => {
-if(username !== location.state.username){
-  toast.success(`${username} joined`)
-}
-      });
-
-socketRef.current.on('joiend' ({clients, username, socketID) }
-    )
-
+      }
+    };
 
     init();
 
-
+    // Clean up the socket connection on component unmount
     return () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
       }
     };
-  }, [navigate, roomId]);
+  }, [navigate, roomId, location.state]);
+  
+
+  
 
   const [clients, setClients] = useState([
     { SocketId: 1, username: 'Himanshu' },
