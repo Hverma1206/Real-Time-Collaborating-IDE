@@ -1,6 +1,7 @@
 const express = require('express');
 const { Server } = require('socket.io');
 const http = require('http');
+const { disconnect } = require('process');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
@@ -15,14 +16,12 @@ const getAllConnectedClients = (roomId) => {
     };
   });
 };
-
 io.on('connection', (socket) => {
   socket.on('join', ({ roomId, username }) => {
     userSocketMap[socket.id] = username;
     socket.join(roomId);
     const clients = getAllConnectedClients(roomId);
     
-    // Notify all clients in the room about the new user
     clients.forEach(({ socketId }) => {
       io.to(socketId).emit('joined', {
         clients,
@@ -32,10 +31,29 @@ io.on('connection', (socket) => {
     });
   });
 
-  socket.on('disconnect', () => {
+  socket.on('leave', ({ roomId, username }) => {
+    socket.leave(roomId);
+    const clients = getAllConnectedClients(roomId);
+    
+    clients.forEach(({ socketId }) => {
+      io.to(socketId).emit('left', { username });
+    });
+
+    delete userSocketMap[socket.id];
+  });
+
+  socket.on('disconnecting', () => {
+    const rooms = [...socket.rooms];
+    rooms.forEach((roomId) => {
+      socket.in(roomId).emit('disconnected', {
+        socketId: socket.id,
+        username: userSocketMap[socket.id],
+      });
+    });
     delete userSocketMap[socket.id];
   });
 });
+
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
