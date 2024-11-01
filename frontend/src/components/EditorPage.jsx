@@ -4,12 +4,11 @@ import './Editorpage.css';
 import Client from './Client.jsx';
 import Editor from './Editor.jsx';
 import { initSocket } from '../socket.js';
-import { useNavigate, useLocation, useParams, Navigate } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 const { Sider, Content } = Layout;
 const { Title } = Typography;
-  
 
 export default function EditorPage() {
   const socketRef = useRef(null);
@@ -17,62 +16,63 @@ export default function EditorPage() {
   const { roomId } = useParams();
   const navigate = useNavigate();
 
+  // Check if the username exists in location.state
+  const username = location.state?.username;
+
+  // Redirect to home if username is missing
+  useEffect(() => {
+    if (!username) {
+      toast.error('Username is missing, redirecting to the home page.');
+      setTimeout(() => navigate('/'), 0); // Delay to prevent rendering issues
+    }
+  }, [username, navigate]);
+
+  const [clients, setClients] = useState([]);
+
   useEffect(() => {
     const init = async () => {
       try {
-        // Initialize the socket connection
         socketRef.current = await initSocket();
-
-        // Handle socket connection errors
+  
         const handleError = (e) => {
-          console.log('socket error =>', e);
-          toast.error("Socket Connection Failed");
+          console.log('Socket error:', e);
+          toast.error('Socket Connection Failed');
           navigate('/');
         };
-
+  
         socketRef.current.on('connect_error', handleError);
         socketRef.current.on('connect_failed', handleError);
-
-        // Emit the joined event to notify server of the new participant
-        socketRef.current.emit('joined', {
-          roomId,
-          username: location.state?.username,
-        });
-
-        // Notify others in the room when someone joins
-        socketRef.current.on('join', ({ username }) => {
-          if (username !== location.state?.username) {
-            toast.success(`${username} joined`);
+  
+        socketRef.current.emit('join', { roomId, username });
+  
+        // Listen for 'joined' event with a check for data presence
+        socketRef.current.on('joined', (data) => {
+          if (data && data.clients) {
+            const { clients, username: joinedUser } = data;
+            setClients(clients);
+            if (joinedUser !== username) {
+              toast.success(`${joinedUser} joined the room`);
+            }
+          } else {
+            console.error('Joined event received incomplete data:', data);
           }
         });
       } catch (error) {
-        console.error("Failed to initialize socket", error);
-        toast.error("Failed to connect to the server.");
+        console.error('Failed to initialize socket', error);
+        toast.error('Failed to connect to the server.');
         navigate('/');
       }
     };
-
+  
     init();
-
-    // Clean up the socket connection on component unmount
+  
     return () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
       }
     };
-  }, [navigate, roomId, location.state]);
+  }, [navigate, roomId, username]);
   
-
-  
-
-  const [clients, setClients] = useState([
-    { SocketId: 1, username: 'Himanshu' },
-    { SocketId: 2, username: 'Verma' },
-  ]);
-
-  if (!location.state) {
-    return <Navigate to="/" />;
-  }
 
   return (
     <Layout style={{ height: '100vh' }}>
@@ -93,9 +93,9 @@ export default function EditorPage() {
             LumosHub
           </Title>
           <Divider style={{ backgroundColor: '#3a3a3a' }} />
-          <div className='member-avatar'>
+          <div className="member-avatar">
             {clients.map((client) => (
-              <Client key={client.SocketId} username={client.username} />
+              <Client key={client.socketId} username={client.username} />
             ))}
           </div>
         </div>
