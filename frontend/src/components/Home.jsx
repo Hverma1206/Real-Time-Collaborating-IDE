@@ -5,38 +5,32 @@ import { useNavigate } from 'react-router-dom'
 import { Form, Input, Button, Typography } from 'antd'
 import toast from 'react-hot-toast';
 
-
 const { Title, Text } = Typography;
 
 const Home = () => {
   const [roomId, setRoomId] = useState("");
   const [form] = Form.useForm();
-  const [username, setUsername] = useState("")
-  const navigate = useNavigate()
-
-  const onFinish = (values) => {
-    console.log('Form Values:', values)
-  };
+  const navigate = useNavigate();
 
   const generateRoomId = (e) => {
-    e.preventDefault()
+    e.preventDefault();
     const id = uuid().slice(0, 6);
-    setRoomId(id)
-    form.setFieldsValue({ RoomID: id })
-    toast.success(("Room Id is generated"))
-  }
+    setRoomId(id);
+    form.setFieldsValue({ RoomID: id });
+    toast.success("Room Id is generated");
+  };
 
-  const joinRoom = () => {
-    if (!roomId || !username) {
-      toast.error("Both the field is required!")
+  const onFinish = (values) => {
+    if (!values.RoomID || !values.username) {
+      toast.error("Both fields are required!");
       return;
     }
-    navigate(`/editor/${roomId}`,{
-      state : {username}, 
-    })
-    toast.success(("Room is created"))
+    navigate(`/editor/${values.RoomID}`, {
+      state: { username: values.username },
+    });
+    toast.success("Room is created");
+  };
 
-  }
   return (
     <div className='cont'>
       <div className='form'>
@@ -68,14 +62,10 @@ const Home = () => {
               <Input
                 placeholder='Username'
                 className='custom-input'
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
               />
             </Form.Item>
             <Form.Item>
-              <Button type='primary' htmlType='submit' block className='custom-btn'
-                onClick={joinRoom}
-              >
+              <Button type='primary' htmlType='submit' block className='custom-btn'>
                 Join
               </Button>
             </Form.Item>

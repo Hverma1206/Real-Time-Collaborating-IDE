@@ -29,6 +29,7 @@ export default function EditorPage() {
   useEffect(() => {
     const init = async () => {
       try {
+        // Initialize the socket connection
         socketRef.current = await initSocket();
 
         const handleError = (e) => {
@@ -40,7 +41,14 @@ export default function EditorPage() {
         socketRef.current.on('connect_error', handleError);
         socketRef.current.on('connect_failed', handleError);
 
+        // Emit the join event to attempt joining the room
         socketRef.current.emit('join', { roomId, username });
+
+        // Listen for `room_not_found` only if room truly doesn’t exist
+        socketRef.current.on('room_not_found', (message) => {
+          toast.error(message);
+          navigate('/');
+        });
 
         socketRef.current.on('joined', (data) => {
           if (data && data.clients) {
@@ -52,7 +60,7 @@ export default function EditorPage() {
           }
         });
 
-        // Handle user leaving the room
+        // Handle user leaving
         socketRef.current.on('left', ({ username }) => {
           setClients((prevClients) => prevClients.filter((client) => client.username !== username));
           toast(`${username} has left the room`);
@@ -73,6 +81,7 @@ export default function EditorPage() {
 
     init();
 
+    // Clean up socket on unmount
     return () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
