@@ -75,7 +75,6 @@ export default function EditorPage() {
 
     return () => {
       if (socketRef.current) {
-        socketRef.current.emit('leave', { roomId, username });
         socketRef.current.disconnect();
       }
     };
