@@ -22,7 +22,7 @@ const Home = () => {
 
   const onFinish = (values) => {
     if (!values.RoomID || !values.username) {
-      toast.error("Both fields are required!");
+      toast.error("Both fields are required!")
       return;
     }
     navigate(`/editor/${values.RoomID}`, {
@@ -87,4 +87,4 @@ const Home = () => {
   )
 }
 
-export default Home;
+export default Home
