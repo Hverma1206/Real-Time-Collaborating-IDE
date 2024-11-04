@@ -1,4 +1,3 @@
-// Editor.jsx
 import React, { useEffect, useState } from 'react';
 import { Select } from 'antd';
 import CodeMirror from '@uiw/react-codemirror';

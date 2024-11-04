@@ -11,6 +11,9 @@
     "@codemirror/lang-javascript": "^6.2.2",
     "@codemirror/lang-markdown": "^6.3.0",
     "@codemirror/lang-python": "^6.1.6",
+    "@codemirror/language": "^6.10.3",
+    "@codemirror/state": "^6.4.1",
+    "@codemirror/view": "^6.34.1",
     "@monaco-editor/react": "^4.6.0",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
@@ -29,7 +32,7 @@
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.4.1",
     "react-router-dom": "^6.27.0",
-    "react-scripts": "^5.0.1",
+    "react-scripts": "^3.0.1",
     "socket.io-client": "^4.8.0",
     "uuid": "^10.0.0",
     "web-vitals": "^2.1.4"
@@ -62,6 +65,6 @@
     "@babel/core": "^7.25.9",
     "@babel/preset-env": "^7.25.9",
     "@babel/preset-react": "^7.25.9",
-    "babel-loader": "^9.2.1"
+    "babel-loader": "^8.0.5"
   }
 }
