@@ -40,7 +40,7 @@ io.on('connection', (socket) => {
 
   socket.on('codeChange', ({ roomId, code }) => {
     // Broadcast the code change to all users in the room
-    socket.to(roomId).emit('codeUpdate', code);
+    socket.to(roomId).emit('codeChange', {code});
   });
 
   socket.on('leave', ({ roomId, username }) => {
