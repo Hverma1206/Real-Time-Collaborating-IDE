@@ -1,24 +1,11 @@
 // Editor.jsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Select } from 'antd';
-import CodeMirror from '@uiw/react-codemirror';
-import { javascript } from '@codemirror/lang-javascript';
-import { python } from '@codemirror/lang-python';
-import { cpp } from '@codemirror/lang-cpp';
-import { java } from '@codemirror/lang-java';
-import { dracula } from '@uiw/codemirror-theme-dracula';
-import { autocompletion } from '@codemirror/autocomplete';
+import { Editor } from '@monaco-editor/react'; // Use the default export here
 
 const { Option } = Select;
 
-const languageExtensions = {
-  javascript: javascript,
-  python: python,
-  cpp: cpp,
-  java: java,
-};
-
-function Editor() {
+function EditorComponent() {
   const [code, setCode] = useState('// Start coding here!');
   const [selectedLanguage, setSelectedLanguage] = useState('javascript');
 
@@ -28,7 +15,7 @@ function Editor() {
 
   const handleLanguageChange = (language) => {
     setSelectedLanguage(language);
-    setCode(getStartingSnippet(language)); // Optional: Reset editor with a snippet
+    setCode(getStartingSnippet(language)); // Reset editor with a snippet
   };
 
   const getStartingSnippet = (language) => {
@@ -61,18 +48,18 @@ function Editor() {
         </Select>
       </div>
 
-      <CodeMirror
-        value={code}
+      <Editor
         height="100%"
-        theme={dracula}
-        extensions={[
-          languageExtensions[selectedLanguage](),
-          autocompletion({ icons: false }), // Add basic autocompletion
-        ]}
+        language={selectedLanguage}
+        value={code}
         onChange={handleCodeChange}
+        options={{
+          selectOnLineNumbers: true,
+          automaticLayout: true,
+        }}
       />
     </div>
   );
 }
 
-export default Editor;
+export default EditorComponent; 
