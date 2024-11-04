@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
-import './Home.css'
-import { v4 as uuid } from 'uuid'
-import { useNavigate } from 'react-router-dom'
-import { Form, Input, Button, Typography } from 'antd'
+import React, { useState } from 'react';
+import './Home.css';
+import { v4 as uuid } from 'uuid';
+import { useNavigate } from 'react-router-dom';
+import { Form, Input, Button, Typography } from 'antd';
 import toast from 'react-hot-toast';
 
 const { Title, Text } = Typography;
@@ -17,18 +17,18 @@ const Home = () => {
     const id = uuid().slice(0, 6);
     setRoomId(id);
     form.setFieldsValue({ RoomID: id });
-    toast.success("Room Id is generated");
+    toast.success("Room ID generated");
   };
 
   const onFinish = (values) => {
     if (!values.RoomID || !values.username) {
-      toast.error("Both fields are required!")
+      toast.error("Both fields are required!");
       return;
     }
     navigate(`/editor/${values.RoomID}`, {
       state: { username: values.username },
     });
-    toast.success("Room is created");
+    toast.success("Room created");
   };
 
   return (
@@ -84,7 +84,7 @@ const Home = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;

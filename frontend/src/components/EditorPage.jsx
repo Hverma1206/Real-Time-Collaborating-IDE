@@ -31,7 +31,8 @@ export default function EditorPage() {
       try {
         // Initialize the socket connection
         socketRef.current = await initSocket();
-
+        
+        // Handle connection issues
         const handleError = (e) => {
           console.log('Socket error:', e);
           toast.error('Socket Connection Failed');
@@ -41,10 +42,12 @@ export default function EditorPage() {
         socketRef.current.on('connect_error', handleError);
         socketRef.current.on('connect_failed', handleError);
 
-        // Emit the join event to attempt joining the room
-        socketRef.current.emit('join', { roomId, username });
+        // Wait until the socket connection is established
+        socketRef.current.on('connect', () => {
+          // Emit the join event once connected
+          socketRef.current.emit('join', { roomId, username });
+        });
 
-        // Listen for `room_not_found` only if room truly doesn’t exist
         socketRef.current.on('room_not_found', (message) => {
           toast.error(message);
           navigate('/');
@@ -60,13 +63,11 @@ export default function EditorPage() {
           }
         });
 
-        // Handle user leaving
         socketRef.current.on('left', ({ username }) => {
           setClients((prevClients) => prevClients.filter((client) => client.username !== username));
           toast(`${username} has left the room`);
         });
 
-        // Handle user disconnection
         socketRef.current.on('disconnected', ({ socketId, username }) => {
           setClients((prevClients) => prevClients.filter((client) => client.socketId !== socketId));
           toast(`${username} has disconnected`);
