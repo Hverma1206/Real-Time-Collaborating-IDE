@@ -1,10 +1,16 @@
 const express = require('express');
 const { Server } = require('socket.io');
 const http = require('http');
-const { disconnect } = require('process');
+const cors = require('cors'); // Add CORS to handle cross-origin requests
+
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000", // Replace with your React frontend URL
+    methods: ["GET", "POST"],
+  },
+});
 
 const userSocketMap = {};
 
@@ -16,18 +22,13 @@ const getAllConnectedClients = (roomId) => {
     };
   });
 };
+
 io.on('connection', (socket) => {
-  socket.on('join', ({ roomId, username }) => {    const roomExists = io.sockets.adapter.rooms.has(roomId);
-
-    if (!roomExists) {
-      socket.emit('room_not_found', 'Room does not exist.');
-      return;
-    }
-
+  socket.on('join', ({ roomId, username }) => {
     userSocketMap[socket.id] = username;
-    socket.join(roomId);
-    const clients = getAllConnectedClients(roomId);
+    socket.join(roomId); // Automatically creates the room if it doesn't exist
 
+    const clients = getAllConnectedClients(roomId);
     clients.forEach(({ socketId }) => {
       io.to(socketId).emit('joined', {
         clients,
@@ -39,10 +40,10 @@ io.on('connection', (socket) => {
 
   socket.on('leave', ({ roomId, username }) => {
     socket.leave(roomId);
-    const clients = getAllConnectedClients(roomId)
+    const clients = getAllConnectedClients(roomId);
 
     clients.forEach(({ socketId }) => {
-      io.to(socketId).emit('left', { username })
+      io.to(socketId).emit('left', { username });
     });
 
     delete userSocketMap[socket.id];
@@ -56,9 +57,9 @@ io.on('connection', (socket) => {
         username: userSocketMap[socket.id],
       });
     });
-    delete userSocketMap[socket.id]
+    delete userSocketMap[socket.id];
   });
 });
 
-const PORT = process.env.PORT || 5000
-server.listen(PORT, () => console.log(`Server is running on port ${PORT}`))
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
