@@ -1,17 +1,49 @@
 // Editor.jsx
 import React, { useEffect, useState } from 'react';
 import { Select } from 'antd';
-import { Editor } from '@monaco-editor/react'; // Use the default export here
+import CodeMirror from '@uiw/react-codemirror';
+import { javascript } from '@codemirror/lang-javascript';
+import { python } from '@codemirror/lang-python';
+import { cpp } from '@codemirror/lang-cpp';
+import { java } from '@codemirror/lang-java';
+import { dracula } from '@uiw/codemirror-theme-dracula';
+import { io } from 'socket.io-client';
 
 const { Option } = Select;
+
+const socket = io('http://localhost:5000'); // Adjust the URL as needed
+
+const languageExtensions = {
+  javascript: javascript,
+  python: python,
+  cpp: cpp,
+  java: java,
+};
 
 function EditorComponent() {
   const [code, setCode] = useState('// Start coding here!');
   const [selectedLanguage, setSelectedLanguage] = useState('javascript');
 
+  // Emit code change to other users
   const handleCodeChange = (value) => {
     setCode(value);
+
+    // Emit the code change event
+    socket.emit('codeChange', { code: value, roomId: 'yourRoomIdHere' }); // Replace with actual room ID
   };
+
+  // Listen for code changes from other users
+  useEffect(() => {
+    socket.on('codeChange', (data) => {
+      if (data.roomId === 'yourRoomIdHere') { // Check if the change is from the same room
+        setCode(data.code); // Update the code from other users
+      }
+    });
+
+    return () => {
+      socket.off('codeChange'); // Clean up listener on unmount
+    };
+  }, []);
 
   const handleLanguageChange = (language) => {
     setSelectedLanguage(language);
@@ -48,18 +80,15 @@ function EditorComponent() {
         </Select>
       </div>
 
-      <Editor
-        height="100%"
-        language={selectedLanguage}
+      <CodeMirror
         value={code}
+        height="100%"
+        theme={dracula}
+        extensions={[languageExtensions[selectedLanguage]()]}
         onChange={handleCodeChange}
-        options={{
-          selectOnLineNumbers: true,
-          automaticLayout: true,
-        }}
       />
     </div>
   );
 }
 
-export default EditorComponent; 
+export default EditorComponent;
