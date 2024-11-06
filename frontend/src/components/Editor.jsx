@@ -1,52 +1,78 @@
 import React, { useEffect, useState } from 'react';
 import { Select } from 'antd';
 import CodeMirror from '@uiw/react-codemirror';
-import { javascript } from '@codemirror/lang-javascript';
-import { python } from '@codemirror/lang-python';
-import { cpp } from '@codemirror/lang-cpp';
-import { java } from '@codemirror/lang-java';
+import { javascript } from '@codemirror/lang-javascript'; // Correct import for JavaScript
+import { python } from '@codemirror/lang-python'; // Correct import for Python
+import { cpp } from '@codemirror/lang-cpp'; // Correct import for C++
+import { java } from '@codemirror/lang-java'; // Correct import for Java
 import { dracula } from '@uiw/codemirror-theme-dracula';
 import { io } from 'socket.io-client';
-
 const { Option } = Select;
 
-const socket = io('http://localhost:5000'); // Adjust the URL as needed
+const socket = io('http://localhost:5000'); // Replace with your server's address
 
 const languageExtensions = {
-  javascript: javascript,
-  python: python,
-  cpp: cpp,
-  java: java,
+  javascript,
+  python,
+  cpp,
+  java,
 };
 
 function EditorComponent() {
   const [code, setCode] = useState('// Start coding here!');
   const [selectedLanguage, setSelectedLanguage] = useState('javascript');
+  const [roomId, setRoomId] = useState('yourRoomIdHere'); // Replace with dynamic roomId
+  const [username, setUsername] = useState('User_' + Math.floor(Math.random() * 100)); // Temporary username
 
-  // Emit code change to other users
-  const handleCodeChange = (value) => {
-    setCode(value);
-
-    // Emit the code change event
-    socket.emit('codeChange', { code: value, roomId: 'yourRoomIdHere' }); // Replace with actual room ID
-  };
-
-  // Listen for code changes from other users
+  // Join the room when the component mounts
   useEffect(() => {
+    socket.emit('join', { roomId, username });
+
+    // Listen for code changes
     socket.on('codeChange', (data) => {
-      if (data.roomId === 'yourRoomIdHere') { // Check if the change is from the same room
-        setCode(data.code); // Update the code from other users
-      }
+      setCode(data.code);
+    });
+
+    // Handle initial code request when a user joins
+    socket.on('requestCode', () => {
+      socket.emit('responseCode', { code });
+    });
+
+    // Listen for user join notifications
+    socket.on('joined', (data) => {
+      console.log(`${data.username} joined the room`);
+    });
+
+    // Listen for user leave notifications
+    socket.on('left', (data) => {
+      console.log(`${data.username} left the room`);
+    });
+
+    // Listen for user disconnections
+    socket.on('disconnected', (data) => {
+      console.log(`${data.username} disconnected`);
     });
 
     return () => {
-      socket.off('codeChange'); // Clean up listener on unmount
+      // Cleanup when the component is unmounted
+      socket.emit('leave', { roomId, username });
+      socket.off('codeChange');
+      socket.off('requestCode');
+      socket.off('joined');
+      socket.off('left');
+      socket.off('disconnected');
     };
-  }, []);
+  }, [roomId, username, code]);
+
+  // Emit code change with debounce (for better performance in real-time editing)
+  const handleCodeChange = (value) => {
+    setCode(value);
+    socket.emit('codeChange', { roomId, code: value });
+  };
 
   const handleLanguageChange = (language) => {
     setSelectedLanguage(language);
-    setCode(getStartingSnippet(language)); // Reset editor with a snippet
+    setCode(getStartingSnippet(language));
   };
 
   const getStartingSnippet = (language) => {
@@ -83,8 +109,8 @@ function EditorComponent() {
         value={code}
         height="100%"
         theme={dracula}
-        extensions={[languageExtensions[selectedLanguage]()]}
-        onChange={handleCodeChange}
+        extensions={[languageExtensions[selectedLanguage]()] }
+        onChange={(value) => handleCodeChange(value)}
       />
     </div>
   );
