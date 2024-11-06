@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Layout, Button, Divider, Typography } from 'antd';
+import { Layout, Button, Divider, Typography, Select } from 'antd';
 import './Editorpage.css';
 import Client from './Client.jsx';
 import Editor from './Editor.jsx';
@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 
 const { Sider, Content } = Layout;
 const { Title } = Typography;
+const { Option } = Select;
 
 export default function EditorPage() {
   const socketRef = useRef(null);
@@ -18,6 +19,7 @@ export default function EditorPage() {
   const username = location.state?.username;
 
   const [clients, setClients] = useState([]);
+  const [role, setRole] = useState('reader'); // Track the role of the current user
 
   useEffect(() => {
     if (!username) {
@@ -29,12 +31,9 @@ export default function EditorPage() {
   useEffect(() => {
     const init = async () => {
       try {
-        // Initialize the socket connection
         socketRef.current = await initSocket();
-        
-        // Handle connection issues
+
         const handleError = (e) => {
-          console.log('Socket error:', e);
           toast.error('Socket Connection Failed');
           navigate('/');
         };
@@ -42,15 +41,8 @@ export default function EditorPage() {
         socketRef.current.on('connect_error', handleError);
         socketRef.current.on('connect_failed', handleError);
 
-        // Wait until the socket connection is established
         socketRef.current.on('connect', () => {
-          // Emit the join event once connected
           socketRef.current.emit('join', { roomId, username });
-        });
-
-        socketRef.current.on('room_not_found', (message) => {
-          toast.error(message);
-          navigate('/');
         });
 
         socketRef.current.on('joined', (data) => {
@@ -60,21 +52,20 @@ export default function EditorPage() {
             if (joinedUser !== username) {
               toast.success(`${joinedUser} joined the room`);
             }
+
+            // Set the role of the current user based on server data
+            const currentUser = clients.find((client) => client.username === username);
+            if (currentUser) {
+              setRole(currentUser.role);
+            }
           }
         });
 
-        socketRef.current.on('left', ({ username }) => {
-          setClients((prevClients) => prevClients.filter((client) => client.username !== username));
-          toast(`${username} has left the room`);
-        });
-
-        socketRef.current.on('disconnected', ({ socketId, username }) => {
-          setClients((prevClients) => prevClients.filter((client) => client.socketId !== socketId));
-          toast(`${username} has disconnected`);
+        socketRef.current.on('updateClients', ({ clients }) => {
+          setClients(clients); // Update clients' role data
         });
 
       } catch (error) {
-        console.error('Failed to initialize socket', error);
         toast.error('Failed to connect to the server.');
         navigate('/');
       }
@@ -82,13 +73,18 @@ export default function EditorPage() {
 
     init();
 
-    // Clean up socket on unmount
     return () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
       }
     };
   }, [navigate, roomId, username]);
+
+  const handleRoleChange = (clientSocketId, newRole) => {
+    if (role === 'admin') {
+      socketRef.current.emit('changeRole', { targetSocketId: clientSocketId, newRole });
+    }
+  };
 
   const handleLeaveRoom = () => {
     if (socketRef.current) {
@@ -118,7 +114,19 @@ export default function EditorPage() {
           <Divider style={{ backgroundColor: '#3a3a3a' }} />
           <div className="member-avatar">
             {clients.map((client) => (
-              <Client key={client.socketId} username={client.username} />
+              <div key={client.socketId} style={{ display: 'flex', alignItems: 'center' }}>
+                <Client username={client.username} role={client.role} />
+                {role === 'admin' && client.role !== 'admin' && (
+                  <Select
+                    defaultValue={client.role}
+                    style={{ width: 100, marginLeft: '10px' }}
+                    onChange={(newRole) => handleRoleChange(client.socketId, newRole)}
+                  >
+                    <Option value="reader">Reader</Option>
+                    <Option value="writer">Writer</Option>
+                  </Select>
+                )}
+              </div>
             ))}
           </div>
         </div>
@@ -153,7 +161,7 @@ export default function EditorPage() {
               padding: '20px',
             }}
           >
-            <Editor />
+            <Editor canEdit={role === 'admin' || role === 'writer'} />
           </div>
         </Content>
       </Layout>
