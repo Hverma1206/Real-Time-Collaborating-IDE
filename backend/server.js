@@ -25,6 +25,7 @@ const getAllConnectedClients = (roomId) => {
 };
 
 io.on('connection', (socket) => {
+  socket.setMaxListeners(20); 
   // User joins a room
   socket.on('join', ({ roomId, username }) => {
     userSocketMap[socket.id] = username;
