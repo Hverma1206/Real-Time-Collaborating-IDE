@@ -13,39 +13,42 @@ const io = new Server(server, {
 });
 
 const userSocketMap = {};
+const userRoleMap = {}; // Map to store roles for each user
 
-// Helper function to get all clients in a specific room
+// Helper function to get all clients in a specific room with roles
 const getAllConnectedClients = (roomId) => {
-  return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map((socketId) => {
-    return {
-      socketId,
-      username: userSocketMap[socketId],
-    };
-  });
+  return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map((socketId) => ({
+    socketId,
+    username: userSocketMap[socketId],
+    role: userRoleMap[socketId], // Get role from userRoleMap
+  }));
 };
 
 io.on('connection', (socket) => {
-  socket.setMaxListeners(20); 
   // User joins a room
   socket.on('join', ({ roomId, username }) => {
     userSocketMap[socket.id] = username;
+    const clients = getAllConnectedClients(roomId);
+    
+    // Assign "admin" role to the first user, "reader" to others
+    userRoleMap[socket.id] = clients.length === 0 ? 'admin' : 'reader';
     socket.join(roomId);
 
-    // Notify current clients in the room of the new user
-    const clients = getAllConnectedClients(roomId);
-    clients.forEach(({ socketId }) => {
-      io.to(socketId).emit('joined', {
-        clients,
-        username,
-        socketId: socket.id,
-      });
+    // Notify all clients in the room about the new user and roles
+    io.in(roomId).emit('joined', {
+      clients: getAllConnectedClients(roomId),
     });
+  });
 
-    // Send initial code to the new user
-    socket.to(roomId).emit('requestCode');
-    socket.on('responseCode', (code) => {
-      socket.emit('initCode', { code });
-    });
+  // Handle role changes
+  socket.on('changeRole', ({ targetSocketId, newRole }) => {
+    if (userRoleMap[socket.id] === 'admin') { // Only admin can change roles
+      userRoleMap[targetSocketId] = newRole;
+      const roomId = Array.from(socket.rooms)[1]; // Get the room id
+      io.in(roomId).emit('updateClients', {
+        clients: getAllConnectedClients(roomId),
+      });
+    }
   });
 
   // Listen for code changes and broadcast within the room
@@ -53,25 +56,20 @@ io.on('connection', (socket) => {
     socket.to(roomId).emit('codeChange', { code });
   });
 
-  // User leaves the room
+  // Handle user leave and disconnection
   socket.on('leave', ({ roomId, username }) => {
     socket.leave(roomId);
     delete userSocketMap[socket.id];
-
-    // Notify other clients in the room
-    const clients = getAllConnectedClients(roomId);
-    clients.forEach(({ socketId }) => {
-      io.to(socketId).emit('left', { username });
-    });
+    delete userRoleMap[socket.id];
+    io.in(roomId).emit('left', { username });
   });
 
-  // Handle user disconnection
   socket.on('disconnecting', () => {
-    const rooms = [...socket.rooms];
-    rooms.forEach((roomId) => {
-      io.to(roomId).emit('disconnected', { username: userSocketMap[socket.id] });
-    });
+    const roomId = Array.from(socket.rooms)[1];
+    const username = userSocketMap[socket.id];
     delete userSocketMap[socket.id];
+    delete userRoleMap[socket.id];
+    io.in(roomId).emit('disconnected', { username });
   });
 });
 
