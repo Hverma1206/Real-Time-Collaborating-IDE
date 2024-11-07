@@ -47,10 +47,11 @@ export default function EditorPage() {
 
         socketRef.current.on('joined', (data) => {
           if (data && data.clients) {
-            const { clients, username: joinedUser } = data;
+            const { clients, joinedUser } = data; // Destructure joinedUser
             setClients(clients);
+            
             if (joinedUser !== username) {
-              toast.success(`${joinedUser} joined the room`);
+              toast.success(`${joinedUser} joined the room`); // Display joinedUser's name in the toast
             }
 
             // Set the role of the current user based on server data
