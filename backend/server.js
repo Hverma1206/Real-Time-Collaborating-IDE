@@ -37,6 +37,7 @@ io.on('connection', (socket) => {
     // Notify all clients in the room about the new user and roles
     io.in(roomId).emit('joined', {
       clients: getAllConnectedClients(roomId),
+      joinedUser: username, // Include the username of the newly joined user
     });
   });
 
