@@ -18,7 +18,7 @@ const languageExtensions = {
   java,
 };
 
-function EditorComponent({ role }) {
+function EditorComponent() {
   const [code, setCode] = useState('// Start coding here!');
   const [selectedLanguage, setSelectedLanguage] = useState('javascript');
   const [roomId, setRoomId] = useState('yourRoomIdHere'); // Replace with dynamic roomId
@@ -39,13 +39,19 @@ function EditorComponent({ role }) {
     });
 
     // Listen for user join notifications
-    socket.on('joined', (data) => {});
+    socket.on('joined', (data) => {
+      console.log(`${data.username} joined the room`);
+    });
 
     // Listen for user leave notifications
-    socket.on('left', (data) => {});
+    socket.on('left', (data) => {
+      console.log(`${data.username} left the room`);
+    });
 
     // Listen for user disconnections
-    socket.on('disconnected', (data) => {});
+    socket.on('disconnected', (data) => {
+      console.log(`${data.username} disconnected`);
+    });
 
     return () => {
       // Cleanup when the component is unmounted
@@ -60,14 +66,12 @@ function EditorComponent({ role }) {
 
   // Emit code change with debounce (for better performance in real-time editing)
   const handleCodeChange = (value) => {
-    if (role !== 'reader') { // Only allow code change if not a reader
-      setCode(value);
-      socket.emit('codeChange', { roomId, code: value });
-    }
+    setCode(value);
+    socket.emit('codeChange', { roomId, code: value });
   };
 
   const handleLanguageChange = (language) => {
-    setSelectedLanguage(language);  
+    setSelectedLanguage(language);
     setCode(getStartingSnippet(language));
   };
 
@@ -107,9 +111,6 @@ function EditorComponent({ role }) {
         theme={dracula}
         extensions={[languageExtensions[selectedLanguage]()] }
         onChange={(value) => handleCodeChange(value)}
-        options={{
-          readOnly: role === 'reader', // Disable editing if role is 'reader'
-        }}
       />
     </div>
   );
