@@ -15,14 +15,11 @@ const io = new Server(server, {
 
 const userSocketMap = {};
 
-const userRoleMap = {}; // roles will store here
 
-// Helper function to get all clients in a specific room with roles
 const getAllConnectedClients = (roomId) => {
   return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map((socketId) => ({
     socketId,
     username: userSocketMap[socketId],
-    role: userRoleMap[socketId], 
   }));
 };
 
@@ -44,16 +41,6 @@ io.on('connection', (socket) => {
   });
 
 
-// role change but not working correctly right now
-  socket.on('changeRole', ({ targetSocketId, newRole }) => {
-    if (userRoleMap[socket.id] === 'admin') { // Only admin can change roles
-      userRoleMap[targetSocketId] = newRole;
-      const roomId = Array.from(socket.rooms)[1]; // Get the room id
-      io.in(roomId).emit('updateClients', {
-        clients: getAllConnectedClients(roomId),
-      });
-    }
-  });
 
 // for code changes in real time
   socket.on('codeChange', ({ roomId, code }) => {
@@ -61,7 +48,7 @@ io.on('connection', (socket) => {
   });
 
 
-  // for a user leave
+  // when a user leave
   socket.on('leave', ({ roomId, username }) => {
     socket.leave(roomId);
     delete userSocketMap[socket.id];
