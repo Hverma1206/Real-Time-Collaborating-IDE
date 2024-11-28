@@ -117,16 +117,8 @@ export default function EditorPage() {
             {clients.map((client) => (
               <div key={client.socketId} style={{ display: 'flex', alignItems: 'center' }}>
                 <Client username={client.username} role={client.role} />
-                {role === 'admin' && client.role !== 'admin' && (
-                  <Select
-                    defaultValue={client.role}
-                    style={{ width: 100, marginLeft: '10px' }}
-                    onChange={(newRole) => handleRoleChange(client.socketId, newRole)}
-                  >
-                    <Option value="reader">Reader</Option>
-                    <Option value="writer">Writer</Option>
-                  </Select>
-                )}
+                
+              
               </div>
             ))}
           </div>
@@ -162,7 +154,7 @@ export default function EditorPage() {
               padding: '20px',
             }}
           >
-            <Editor canEdit={role === 'admin' || role === 'writer'} />
+
           </div>
         </Content>
       </Layout>
