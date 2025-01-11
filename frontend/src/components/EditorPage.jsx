@@ -8,7 +8,7 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 const { Sider, Content } = Layout;
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { Option } = Select;
 
 export default function EditorPage() {
@@ -94,6 +94,22 @@ export default function EditorPage() {
     }
   };
 
+  const handleCopyRoomId = async () => {
+    try {
+      // Directly copy the roomId from URL params
+      await navigator.clipboard.writeText(roomId || '');
+      
+      if (roomId) {
+        toast.success('Room ID copied to clipboard!');
+      } else {
+        toast.error('Room ID not available');
+      }
+    } catch (err) {
+      console.error('Copy error:', err);
+      toast.error('Failed to copy room ID');
+    }
+  };
+
   return (
     <Layout style={{ height: '100vh' }}>
       <Sider
@@ -112,6 +128,11 @@ export default function EditorPage() {
           <Title level={3} style={{ color: '#fff', marginBottom: '20px', textAlign: 'center' }}>
             LumosHub
           </Title>
+          {roomId && (
+            <Text style={{ color: '#fff', display: 'block', textAlign: 'center', marginBottom: '10px' }}>
+              Room ID: {roomId}
+            </Text>
+          )}
           <Divider style={{ backgroundColor: '#3a3a3a' }} />
           <div className="member-avatar">
             {clients.map((client) => (
@@ -126,7 +147,7 @@ export default function EditorPage() {
 
         <div style={{ marginTop: 'auto' }}>
           <Divider style={{ backgroundColor: '#3a3a3a' }} />
-          <Button className="copy-btn" type="primary" block>
+          <Button className="copy-btn" type="primary" block onClick={handleCopyRoomId}>
             Copy Room ID
           </Button>
           <Button className="leave-btn" type="danger" block onClick={handleLeaveRoom}>
@@ -148,14 +169,16 @@ export default function EditorPage() {
           <div
             style={{
               background: '#282C34',
-              height: '100%',
+              height: 'calc(100vh - 48px)', // Adjust height to fill available space
               borderRadius: '10px',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
               padding: '20px',
+              overflow: 'hidden', // Add this to prevent scrolling issues
             }}
           >
-
+            <Editor socketRef={socketRef} roomId={roomId} />
           </div>
+
         </Content>
       </Layout>
     </Layout>
