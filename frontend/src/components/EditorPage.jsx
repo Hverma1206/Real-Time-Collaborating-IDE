@@ -101,10 +101,17 @@ export default function EditorPage() {
 
   const handleCopyRoomId = async () => {
     try {
-      // Add a prefix to make it clear what's being copied
-      const textToCopy = `Room ID: ${roomId}`;
-      await navigator.clipboard.writeText(textToCopy);
-      toast.success('Room ID copied!');
+      // Get room ID directly from the URL
+      const currentPath = window.location.pathname;
+      const urlRoomId = currentPath.split('/editor/')[1];
+      
+      if (!urlRoomId) {
+        toast.error('Room ID not found');
+        return;
+      }
+      
+      await navigator.clipboard.writeText(urlRoomId);
+      toast.success('Room ID copied successfully!');
     } catch (err) {
       toast.error('Failed to copy room ID');
     }
@@ -135,8 +142,10 @@ export default function EditorPage() {
               padding: '12px',
               borderRadius: '4px',
               marginBottom: '20px',
-              border: '1px solid #4a4a4a'
+              border: '1px solid #4a4a4a',
+              cursor: 'pointer'
             }}
+            onClick={handleCopyRoomId}
           >
             <Text 
               strong 
@@ -148,7 +157,7 @@ export default function EditorPage() {
                 marginBottom: '4px'
               }}
             >
-              Room ID:
+              Click to copy Room ID:
             </Text>
             <Text
               style={{ 
@@ -160,7 +169,7 @@ export default function EditorPage() {
                 wordBreak: 'break-all'
               }}
             >
-              {roomId}
+              {window.location.pathname.split('/editor/')[1]}
             </Text>
           </div>
           <Divider style={{ backgroundColor: '#3a3a3a' }} />

@@ -14,9 +14,12 @@ const Home = () => {
 
   const generateRoomId = (e) => {
     e.preventDefault();
-    const id = uuid().slice(0, 6);
+    const id = uuid().slice(0, 8); // Using 8 characters for better uniqueness
     setRoomId(id);
     form.setFieldsValue({ RoomID: id });
+    
+    // Add to localStorage for persistence
+    localStorage.setItem('lastRoomId', id);
     toast.success("Room ID generated");
   };
 
@@ -25,10 +28,16 @@ const Home = () => {
       toast.error("Both fields are required!");
       return;
     }
-    navigate(`/editor/${values.RoomID}`, {
-      state: { username: values.username },
+    
+    const trimmedRoomId = values.RoomID.trim();
+    localStorage.setItem('lastRoomId', trimmedRoomId);
+    
+    navigate(`/editor/${trimmedRoomId}`, {
+      state: { 
+        username: values.username,
+        roomId: trimmedRoomId
+      },
     });
-    toast.success("Room created");
   };
 
   return (
