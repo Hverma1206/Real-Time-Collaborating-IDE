@@ -20,6 +20,7 @@ export default function EditorPage() {
 
   const [clients, setClients] = useState([]);
   const [role, setRole] = useState('reader'); // Track the role of the current user
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (!username) {
@@ -58,12 +59,21 @@ export default function EditorPage() {
             const currentUser = clients.find((client) => client.username === username);
             if (currentUser) {
               setRole(currentUser.role);
+              setIsAdmin(currentUser.isAdmin);
             }
           }
         });
 
         socketRef.current.on('updateClients', ({ clients }) => {
           setClients(clients); // Update clients' role data
+        });
+
+        socketRef.current.on('roleChanged', ({ clients }) => {
+          setClients(clients);
+          const currentUser = clients.find(client => client.username === username);
+          if (currentUser) {
+            setRole(currentUser.role);
+          }
         });
 
       } catch (error) {
@@ -87,8 +97,8 @@ export default function EditorPage() {
   }, [roomId]);
 
   const handleRoleChange = (clientSocketId, newRole) => {
-    if (role === 'admin') {
-      socketRef.current.emit('changeRole', { targetSocketId: clientSocketId, newRole });
+    if (isAdmin) {
+      socketRef.current.emit('changeRole', { roomId, targetSocketId: clientSocketId, newRole });
     }
   };
 
@@ -135,7 +145,6 @@ export default function EditorPage() {
           <Title level={3} style={{ color: '#fff', marginBottom: '20px', textAlign: 'center' }}>
             LumosHub
           </Title>
-          {/* Room ID display with better visibility */}
           <div 
             style={{ 
               backgroundColor: '#3a3a3a',
@@ -157,7 +166,7 @@ export default function EditorPage() {
                 marginBottom: '4px'
               }}
             >
-              Click to copy Room ID:
+              Room ID:
             </Text>
             <Text
               style={{ 
@@ -176,9 +185,14 @@ export default function EditorPage() {
           <div className="member-avatar">
             {clients.map((client) => (
               <div key={client.socketId} style={{ display: 'flex', alignItems: 'center' }}>
-                <Client username={client.username} role={client.role} />
-                
-              
+                <Client 
+                  username={client.username} 
+                  role={client.role}
+                  isAdmin={client.isAdmin}
+                  currentUserIsAdmin={isAdmin}
+                  onRoleChange={handleRoleChange}
+                  socketId={client.socketId}
+                />
               </div>
             ))}
           </div>
@@ -215,7 +229,7 @@ export default function EditorPage() {
               overflow: 'hidden', // Add this to prevent scrolling issues
             }}
           >
-            <Editor socketRef={socketRef} roomId={roomId} />
+            <Editor socketRef={socketRef} roomId={roomId} userRole={role} />
           </div>
 
         </Content>

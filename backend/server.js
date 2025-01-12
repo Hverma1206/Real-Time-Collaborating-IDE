@@ -15,13 +15,17 @@ const io = new Server(server, {
   },
 });
 
+// Key variables for role management
 const userSocketMap = {};
-const userRoleMap = {};  // Add this line
+const userRoleMap = {};  
+const roomAdmins = {};   
 
 const getAllConnectedClients = (roomId) => {
   return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map((socketId) => ({
     socketId,
     username: userSocketMap[socketId],
+    role: userRoleMap[socketId] || 'reader',
+    isAdmin: roomAdmins[roomId] === socketId
   }));
 };
 
@@ -32,20 +36,30 @@ io.on('connection', (socket) => {
     const clients = getAllConnectedClients(roomId);
     
 // admin role to first user, reader role to other user after admin (but reader role not working properly rn)
-    userRoleMap[socket.id] = clients.length === 0 ? 'admin' : 'reader';
+    if (clients.length === 0) {
+      roomAdmins[roomId] = socket.id;
+      userRoleMap[socket.id] = 'writer';
+    } else {
+      userRoleMap[socket.id] = 'reader'; // Default role for new users
+    }
     socket.join(roomId);
 
     // toast message all user for who has joined
     io.in(roomId).emit('joined', {
-      clients: getAllConnectedClients(roomId).map(client => ({
-        ...client,
-        role: userRoleMap[client.socketId]
-      })),
+      clients: getAllConnectedClients(roomId),
       joinedUser: username, 
     });
   });
 
-
+  // Add role change handler
+  socket.on('changeRole', ({ roomId, targetSocketId, newRole }) => {
+    if (roomAdmins[roomId] === socket.id) { // Only admin can change roles
+      userRoleMap[targetSocketId] = newRole;
+      io.in(roomId).emit('roleChanged', {
+        clients: getAllConnectedClients(roomId)
+      });
+    }
+  });
 
 // for code changes in real time
   socket.on('codeChange', ({ roomId, code }) => {

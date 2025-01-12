@@ -16,7 +16,7 @@ const languageExtensions = {
   java: () => java(),
 };
 
-function EditorComponent({ socketRef, roomId }) {
+function EditorComponent({ socketRef, roomId, userRole }) {
   const [code, setCode] = useState('// Start coding here!');
   const [selectedLanguage, setSelectedLanguage] = useState('javascript');
 
@@ -39,8 +39,10 @@ function EditorComponent({ socketRef, roomId }) {
   }, [socketRef.current]);
 
   const handleCodeChange = (value) => {
-    setCode(value);
-    socketRef.current?.emit('codeChange', { roomId, code: value });
+    if (userRole === 'writer') { // Only writers can edit
+      setCode(value);
+      socketRef.current?.emit('codeChange', { roomId, code: value });
+    }
   };
 
   const handleLanguageChange = (language) => {
@@ -67,17 +69,21 @@ function EditorComponent({ socketRef, roomId }) {
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ marginBottom: '10px' }}>
+      <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Select
           defaultValue={selectedLanguage}
           style={{ width: 200 }}
           onChange={handleLanguageChange}
+          disabled={userRole !== 'writer'} // Only writers can change language
         >
           <Option value="javascript">JavaScript</Option>
           <Option value="python">Python</Option>
           <Option value="cpp">C++</Option>
           <Option value="java">Java</Option>
         </Select>
+        {userRole === 'reader' && (
+          <span style={{ color: '#888' }}>Read-only mode</span>
+        )}
       </div>
 
       <div style={{ flex: 1, overflow: 'hidden' }}>
@@ -87,6 +93,7 @@ function EditorComponent({ socketRef, roomId }) {
           theme={dracula}
           extensions={[languageExtensions[selectedLanguage]()]}
           onChange={handleCodeChange}
+          editable={userRole === 'writer'} // Disable editing for readers
           basicSetup={{
             lineNumbers: true,
             highlightActiveLineGutter: true,

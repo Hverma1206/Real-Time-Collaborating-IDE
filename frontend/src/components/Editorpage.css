@@ -23,3 +23,45 @@
 .leave-btn:hover {
   background-color: #be362d !important;
 }
+
+.role-select .ant-select-selector {
+  background-color: #3a3a3a !important;
+  border: 1px solid #4a4a4a !important;
+  color: #fff !important;
+}
+
+.role-select .ant-select-arrow {
+  color: #fff !important;
+}
+
+.role-select .ant-select-dropdown {
+  background-color: #2B2B2B !important;
+  border: 1px solid #3a3a3a !important;
+}
+
+.role-select .ant-select-item {
+  color: #fff !important;
+}
+
+.role-select .ant-select-item-option-active {
+  background-color: #3a3a3a !important;
+}
+
+.role-select .ant-select-item-option-selected {
+  background-color: #4CAF50 !important;
+  color: #fff !important;
+}
+
+.role-select .ant-select-selection-item {
+  color: #fff !important;
+  background-color: transparent !important;
+}
+
+.role-select .ant-select-item-option {
+  color: #fff !important;
+  padding: 8px 12px !important;
+}
+
+.role-select .ant-select-item-option-content {
+  color: #fff !important;
+}
