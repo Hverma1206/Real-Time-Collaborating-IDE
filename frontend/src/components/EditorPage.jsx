@@ -81,6 +81,11 @@ export default function EditorPage() {
     };
   }, [navigate, roomId, username]);
 
+  // Add this to log and verify roomId
+  useEffect(() => {
+    console.log('Current Room ID:', roomId);
+  }, [roomId]);
+
   const handleRoleChange = (clientSocketId, newRole) => {
     if (role === 'admin') {
       socketRef.current.emit('changeRole', { targetSocketId: clientSocketId, newRole });
@@ -96,16 +101,11 @@ export default function EditorPage() {
 
   const handleCopyRoomId = async () => {
     try {
-      // Directly copy the roomId from URL params
-      await navigator.clipboard.writeText(roomId || '');
-      
-      if (roomId) {
-        toast.success('Room ID copied to clipboard!');
-      } else {
-        toast.error('Room ID not available');
-      }
+      // Add a prefix to make it clear what's being copied
+      const textToCopy = `Room ID: ${roomId}`;
+      await navigator.clipboard.writeText(textToCopy);
+      toast.success('Room ID copied!');
     } catch (err) {
-      console.error('Copy error:', err);
       toast.error('Failed to copy room ID');
     }
   };
@@ -128,11 +128,41 @@ export default function EditorPage() {
           <Title level={3} style={{ color: '#fff', marginBottom: '20px', textAlign: 'center' }}>
             LumosHub
           </Title>
-          {roomId && (
-            <Text style={{ color: '#fff', display: 'block', textAlign: 'center', marginBottom: '10px' }}>
-              Room ID: {roomId}
+          {/* Room ID display with better visibility */}
+          <div 
+            style={{ 
+              backgroundColor: '#3a3a3a',
+              padding: '12px',
+              borderRadius: '4px',
+              marginBottom: '20px',
+              border: '1px solid #4a4a4a'
+            }}
+          >
+            <Text 
+              strong 
+              style={{ 
+                color: '#fff', 
+                display: 'block', 
+                textAlign: 'center',
+                fontSize: '14px',
+                marginBottom: '4px'
+              }}
+            >
+              Room ID:
             </Text>
-          )}
+            <Text
+              style={{ 
+                color: '#00ff00', 
+                display: 'block', 
+                textAlign: 'center',
+                fontSize: '16px',
+                userSelect: 'all',
+                wordBreak: 'break-all'
+              }}
+            >
+              {roomId}
+            </Text>
+          </div>
           <Divider style={{ backgroundColor: '#3a3a3a' }} />
           <div className="member-avatar">
             {clients.map((client) => (
