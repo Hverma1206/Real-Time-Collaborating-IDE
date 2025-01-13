@@ -5,7 +5,9 @@ import ColorHash from 'color-hash';
 const { Option } = Select;
 const colorHash = new ColorHash();
 
-export default function Client({ username, role, isAdmin, currentUserIsAdmin, onRoleChange, socketId }) {
+export default function Client({ username, role, isAdmin, currentUserIsAdmin, onRoleChange, socketId, currentUsername }) {
+  const isCurrentUser = username === currentUsername;
+
   return (
     <div style={{ 
       display: 'flex', 
@@ -68,7 +70,7 @@ export default function Client({ username, role, isAdmin, currentUserIsAdmin, on
         </div>
       </div>
       
-      {currentUserIsAdmin && !isAdmin && (
+      {currentUserIsAdmin && !isCurrentUser && (
         <Select
           defaultValue={role}
           style={{ 

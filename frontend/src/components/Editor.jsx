@@ -6,7 +6,7 @@ import { python } from '@codemirror/lang-python';
 import { cpp } from '@codemirror/lang-cpp';
 import { java } from '@codemirror/lang-java';
 import { dracula } from '@uiw/codemirror-theme-dracula';
-
+import toast from "react-hot-toast"
 const { Option } = Select;
 
 const languageExtensions = {
@@ -39,10 +39,14 @@ function EditorComponent({ socketRef, roomId, userRole }) {
   }, [socketRef.current]);
 
   const handleCodeChange = (value) => {
-    if (userRole === 'writer') { // Only writers can edit
-      setCode(value);
-      socketRef.current?.emit('codeChange', { roomId, code: value });
+    if (userRole !== 'writer') {
+      toast.error('You do not have permission to edit');
+      setCode(code); // Reset to previous code
+      return;
     }
+    
+    setCode(value);
+    socketRef.current?.emit('codeChange', { roomId, code: value });
   };
 
   const handleLanguageChange = (language) => {
@@ -92,8 +96,10 @@ function EditorComponent({ socketRef, roomId, userRole }) {
           height="100%"
           theme={dracula}
           extensions={[languageExtensions[selectedLanguage]()]}
+
           onChange={handleCodeChange}
           editable={userRole === 'writer'} // Disable editing for readers
+          readOnly={userRole !== 'writer'}  // Add explicit readonly
           basicSetup={{
             lineNumbers: true,
             highlightActiveLineGutter: true,

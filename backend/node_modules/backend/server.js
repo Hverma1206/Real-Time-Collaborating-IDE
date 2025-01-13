@@ -71,24 +71,38 @@ io.on('connection', (socket) => {
     socket.to(roomId).emit('codeChange', { code });
   });
 
-  // when a user leave
+
   socket.on('leave', ({ roomId, username }) => {
     socket.leave(roomId);
+    const user = username;
     delete userSocketMap[socket.id];
     delete userRoleMap[socket.id];
-    io.in(roomId).emit('left', { username });
-  })
-
+    
+    // Check if the leaving user was admin
+    if (roomAdmins[roomId] === socket.id) {
+      delete roomAdmins[roomId];
+    }
+    
+    io.in(roomId).emit('left', { username: user });
+  });
 
   socket.on('disconnecting', () => {
-    const roomId = Array.from(socket.rooms)[1]
-    const username = userSocketMap[socket.id]
-    delete userSocketMap[socket.id]
-    delete userRoleMap[socket.id]
+    const rooms = Array.from(socket.rooms);
+    const roomId = rooms[1]; // Second item is the room ID
+    const username = userSocketMap[socket.id];
 
-    io.in(roomId).emit('disconnected', { username })
+    if (roomId && username) {
+      // Clean up user data
+      delete userSocketMap[socket.id];
+      delete userRoleMap[socket.id];
+      
+      if (roomAdmins[roomId] === socket.id) {
+        delete roomAdmins[roomId];
+      }
 
-  })
+      io.in(roomId).emit('disconnected', { username });
+    }
+  });
 })
 
 

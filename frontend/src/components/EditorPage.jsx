@@ -73,7 +73,22 @@ export default function EditorPage() {
           const currentUser = clients.find(client => client.username === username);
           if (currentUser) {
             setRole(currentUser.role);
+            // Reload editor if role changes to reader
+            if (currentUser.role === 'reader') {
+              toast.error('You are now in read-only mode');
+            }
           }
+        });
+
+        // Add handlers for user leaving
+        socketRef.current.on('left', ({ username: leftUser }) => {
+          setClients(prev => prev.filter(client => client.username !== leftUser));
+          toast.success(`${leftUser} left the room`);
+        });
+
+        socketRef.current.on('disconnected', ({ username: disconnectedUser }) => {
+          setClients(prev => prev.filter(client => client.username !== disconnectedUser));
+          toast.error(`${disconnectedUser} disconnected`);
         });
 
       } catch (error) {
@@ -86,6 +101,8 @@ export default function EditorPage() {
 
     return () => {
       if (socketRef.current) {
+        socketRef.current.off('left');
+        socketRef.current.off('disconnected');
         socketRef.current.disconnect();
       }
     };
@@ -192,6 +209,7 @@ export default function EditorPage() {
                   currentUserIsAdmin={isAdmin}
                   onRoleChange={handleRoleChange}
                   socketId={client.socketId}
+                  currentUsername={username}  // Pass current username
                 />
               </div>
             ))}
