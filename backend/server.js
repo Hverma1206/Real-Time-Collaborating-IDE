@@ -67,7 +67,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on('languageChange', ({ roomId, language, code }) => {
-    socket.to(roomId).emit('languageChange', { language });
+    // Broadcast to all clients in the room including sender for consistency
+    io.in(roomId).emit('languageChange', { language });
     socket.to(roomId).emit('codeChange', { code });
   });
 

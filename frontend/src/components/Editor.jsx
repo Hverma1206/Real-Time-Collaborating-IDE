@@ -30,6 +30,10 @@ function EditorComponent({ socketRef, roomId, userRole }) {
     socketRef.current.on('languageChange', ({ language }) => {
       setSelectedLanguage(language);
       setCode(getStartingSnippet(language));
+      const selectElement = document.querySelector('.language-select .ant-select-selection-item');
+      if (selectElement) {
+        selectElement.textContent = language.charAt(0).toUpperCase() + language.slice(1);
+      }
     });
 
     return () => {
@@ -62,7 +66,7 @@ function EditorComponent({ socketRef, roomId, userRole }) {
         return `// JavaScript Snippet\nfunction example() {\n  console.log("Hello World");\n}`;
       case 'python':
         return `# Python Snippet\ndef example():\n  print("Hello World")`;
-      case 'cpp':
+      case 'c++':
         return `// C++ Snippet\n#include <iostream>\nint main() {\n  std::cout << "Hello World" << std::endl;\n  return 0;\n}`;
       case 'java':
         return `// Java Snippet\npublic class Main {\n  public static void main(String[] args) {\n    System.out.println("Hello World");\n  }\n}`;
@@ -75,10 +79,11 @@ function EditorComponent({ socketRef, roomId, userRole }) {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Select
-          defaultValue={selectedLanguage}
+          value={selectedLanguage} // Change from defaultValue to value
           style={{ width: 200 }}
           onChange={handleLanguageChange}
           disabled={userRole !== 'writer'} // Only writers can change language
+          className="language-select"
         >
           <Option value="javascript">JavaScript</Option>
           <Option value="python">Python</Option>
