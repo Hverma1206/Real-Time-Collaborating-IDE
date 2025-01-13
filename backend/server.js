@@ -35,19 +35,17 @@ io.on('connection', (socket) => {
     userSocketMap[socket.id] = username;
     const clients = getAllConnectedClients(roomId);
     
-// admin role to first user, reader role to other user after admin (but reader role not working properly rn)
     if (clients.length === 0) {
       roomAdmins[roomId] = socket.id;
       userRoleMap[socket.id] = 'writer';
     } else {
-      userRoleMap[socket.id] = 'reader'; // Default role for new users
+      userRoleMap[socket.id] = 'reader';
     }
     socket.join(roomId);
 
-    // toast message all user for who has joined
     io.in(roomId).emit('joined', {
       clients: getAllConnectedClients(roomId),
-      joinedUser: username, 
+      joinedUser: username
     });
   });
 

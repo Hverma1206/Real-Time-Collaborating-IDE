@@ -14,12 +14,9 @@ const Home = () => {
 
   const generateRoomId = (e) => {
     e.preventDefault();
-    const id = uuid().slice(0, 8); // Using 8 characters for better uniqueness
+    const id = uuid().slice(0, 8);
     setRoomId(id);
     form.setFieldsValue({ RoomID: id });
-    
-    // Add to localStorage for persistence
-    localStorage.setItem('lastRoomId', id);
     toast.success("Room ID generated");
   };
 
@@ -29,14 +26,8 @@ const Home = () => {
       return;
     }
     
-    const trimmedRoomId = values.RoomID.trim();
-    localStorage.setItem('lastRoomId', trimmedRoomId);
-    
-    navigate(`/editor/${trimmedRoomId}`, {
-      state: { 
-        username: values.username,
-        roomId: trimmedRoomId
-      },
+    navigate(`/editor/${values.RoomID}`, {
+      state: { username: values.username },
     });
   };
 

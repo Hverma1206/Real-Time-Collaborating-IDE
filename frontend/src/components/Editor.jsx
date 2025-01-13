@@ -63,15 +63,15 @@ function EditorComponent({ socketRef, roomId, userRole }) {
   const getStartingSnippet = (language) => {
     switch (language) {
       case 'javascript':
-        return `// JavaScript Snippet\nfunction example() {\n  console.log("Hello World");\n}`;
+        return `// JavaScript Snippet\nfunction example() {\n //Your code here \n}`;
       case 'python':
-        return `# Python Snippet\ndef example():\n  print("Hello World")`;
+        return `# Python Snippet\ndef example():\n #Your code here`;
       case 'c++':
         return `// C++ Snippet\n#include <iostream>\nint main() {\n  std::cout << "Hello World" << std::endl;\n  return 0;\n}`;
       case 'java':
-        return `// Java Snippet\npublic class Main {\n  public static void main(String[] args) {\n    System.out.println("Hello World");\n  }\n}`;
+        return `// Java Snippet\npublic class Main {\n  public static void main(String[] args) {\n    //Your code here \n  }\n}`;
       default:
-        return '// Start coding here!';
+        return '// C++ Snippet \n using namespace std;\nint main() {\n //Your code here \n}';
     }
   };
 

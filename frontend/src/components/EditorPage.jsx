@@ -33,33 +33,27 @@ export default function EditorPage() {
     const init = async () => {
       try {
         socketRef.current = await initSocket();
-
-        const handleError = (e) => {
-          toast.error('Socket Connection Failed');
-          navigate('/');
-        };
-
-        socketRef.current.on('connect_error', handleError);
-        socketRef.current.on('connect_failed', handleError);
+        
+        // Get stored admin info
+        const storedAdmin = JSON.parse(localStorage.getItem('room_admin') || '{}');
+        const isOriginalAdmin = storedAdmin.roomId === roomId && 
+                              storedAdmin.username === username;
 
         socketRef.current.on('connect', () => {
-          socketRef.current.emit('join', { roomId, username });
+          socketRef.current.emit('join', { 
+            roomId, 
+            username,
+            isOriginalAdmin 
+          });
         });
 
         socketRef.current.on('joined', (data) => {
           if (data && data.clients) {
-            const { clients, joinedUser } = data; // Destructure joinedUser
-            setClients(clients);
-            
-            if (joinedUser !== username) {
-              toast.success(`${joinedUser} joined the room`); // Display joinedUser's name in the toast
-            }
-
-            // Set the role of the current user based on server data
-            const currentUser = clients.find((client) => client.username === username);
+            setClients(data.clients);
+            const currentUser = data.clients.find(c => c.username === username);
             if (currentUser) {
               setRole(currentUser.role);
-              setIsAdmin(currentUser.isAdmin);
+              setIsAdmin(currentUser.isAdmin || data.adminUser === username);
             }
           }
         });
