@@ -34,7 +34,6 @@ export default function EditorPage() {
       try {
         socketRef.current = await initSocket();
         
-        // Get stored admin info
         const storedAdmin = JSON.parse(localStorage.getItem('room_admin') || '{}');
         const isOriginalAdmin = storedAdmin.roomId === roomId && 
                               storedAdmin.username === username;
@@ -59,7 +58,7 @@ export default function EditorPage() {
         });
 
         socketRef.current.on('updateClients', ({ clients }) => {
-          setClients(clients); // Update clients' role data
+          setClients(clients); 
         });
 
         socketRef.current.on('roleChanged', ({ clients }) => {
@@ -67,14 +66,12 @@ export default function EditorPage() {
           const currentUser = clients.find(client => client.username === username);
           if (currentUser) {
             setRole(currentUser.role);
-            // Reload editor if role changes to reader
             if (currentUser.role === 'reader') {
               toast.error('You are now in read-only mode');
             }
           }
         });
 
-        // Add handlers for user leaving
         socketRef.current.on('left', ({ username: leftUser }) => {
           setClients(prev => prev.filter(client => client.username !== leftUser));
           toast.success(`${leftUser} left the room`);
@@ -102,7 +99,6 @@ export default function EditorPage() {
     };
   }, [navigate, roomId, username]);
 
-  // Add this to log and verify roomId
   useEffect(() => {
     console.log('Current Room ID:', roomId);
   }, [roomId]);
@@ -122,7 +118,6 @@ export default function EditorPage() {
 
   const handleCopyRoomId = async () => {
     try {
-      // Get room ID directly from the URL
       const currentPath = window.location.pathname;
       const urlRoomId = currentPath.split('/editor/')[1];
       
@@ -203,7 +198,7 @@ export default function EditorPage() {
                   currentUserIsAdmin={isAdmin}
                   onRoleChange={handleRoleChange}
                   socketId={client.socketId}
-                  currentUsername={username}  // Pass current username
+                  currentUsername={username}  
                 />
               </div>
             ))}
@@ -234,11 +229,11 @@ export default function EditorPage() {
           <div
             style={{
               background: '#282C34',
-              height: 'calc(100vh - 48px)', // Adjust height to fill available space
+              height: 'calc(100vh - 48px)', 
               borderRadius: '10px',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
               padding: '20px',
-              overflow: 'hidden', // Add this to prevent scrolling issues
+              overflow: 'hidden', 
             }}
           >
             <Editor socketRef={socketRef} roomId={roomId} userRole={role} />

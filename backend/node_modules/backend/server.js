@@ -1,15 +1,15 @@
 const express = require('express');
 const { Server } = require('socket.io');
 const http = require('http');
-const cors = require('cors');
+const cors = require('cors'); 
 
 const app = express();
-app.use(cors()); // Add this line
+app.use(cors());  // Add this line
 
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*", // More permissive CORS for development
+    origin: "*",  // More permissive CORS for development
     methods: ["GET", "POST"],
     credentials: true
   },
@@ -17,8 +17,8 @@ const io = new Server(server, {
 
 // Key variables for role management
 const userSocketMap = {};
-const userRoleMap = {};
-const roomAdmins = {};
+const userRoleMap = {};  
+const roomAdmins = {};   
 
 const getAllConnectedClients = (roomId) => {
   return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map((socketId) => ({
@@ -29,22 +29,12 @@ const getAllConnectedClients = (roomId) => {
   }));
 };
 
-// Basic route for root
-app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to the server!', status: 'ok' });
-});
-
-// Route for checking server status
-app.get('/status', (req, res) => {
-  res.json({ message: 'Server is live', status: 'ok' });
-});
-
 io.on('connection', (socket) => {
-  // For joining the room
+// for join the room
   socket.on('join', ({ roomId, username }) => {
     userSocketMap[socket.id] = username;
     const clients = getAllConnectedClients(roomId);
-
+    
     if (clients.length === 0) {
       roomAdmins[roomId] = socket.id;
       userRoleMap[socket.id] = 'writer';
@@ -69,7 +59,7 @@ io.on('connection', (socket) => {
     }
   });
 
-  // For code changes in real-time
+// for code changes in real time
   socket.on('codeChange', ({ roomId, code }) => {
     socket.to(roomId).emit('codeChange', { code });
   });
@@ -80,17 +70,18 @@ io.on('connection', (socket) => {
     socket.to(roomId).emit('codeChange', { code });
   });
 
+
   socket.on('leave', ({ roomId, username }) => {
     socket.leave(roomId);
     const user = username;
     delete userSocketMap[socket.id];
     delete userRoleMap[socket.id];
-
+    
     // Check if the leaving user was admin
     if (roomAdmins[roomId] === socket.id) {
       delete roomAdmins[roomId];
     }
-
+    
     io.in(roomId).emit('left', { username: user });
   });
 
@@ -103,7 +94,7 @@ io.on('connection', (socket) => {
       // Clean up user data
       delete userSocketMap[socket.id];
       delete userRoleMap[socket.id];
-
+      
       if (roomAdmins[roomId] === socket.id) {
         delete roomAdmins[roomId];
       }
@@ -111,8 +102,9 @@ io.on('connection', (socket) => {
       io.in(roomId).emit('disconnected', { username });
     }
   });
-});
+})
+
 
 const PORT = process.env.PORT || 5000;
 
-server.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Server is running on port ${PORT}`))

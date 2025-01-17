@@ -45,7 +45,8 @@ function EditorComponent({ socketRef, roomId, userRole }) {
   const handleCodeChange = (value) => {
     if (userRole !== 'writer') {
       toast.error('You do not have permission to edit');
-      setCode(code); // Reset to previous code
+      setCode(code); 
+      
       return;
     }
     
@@ -79,10 +80,10 @@ function EditorComponent({ socketRef, roomId, userRole }) {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Select
-          value={selectedLanguage} // Change from defaultValue to value
+          value={selectedLanguage} 
           style={{ width: 200 }}
           onChange={handleLanguageChange}
-          disabled={userRole !== 'writer'} // Only writers can change language
+          disabled={userRole !== 'writer'} 
           className="language-select"
         >
           <Option value="javascript">JavaScript</Option>
@@ -103,8 +104,9 @@ function EditorComponent({ socketRef, roomId, userRole }) {
           extensions={[languageExtensions[selectedLanguage]()]}
 
           onChange={handleCodeChange}
-          editable={userRole === 'writer'} // Disable editing for readers
-          readOnly={userRole !== 'writer'}  // Add explicit readonly
+          editable={userRole === 'writer'} 
+
+          readOnly={userRole !== 'writer'}  
           basicSetup={{
             lineNumbers: true,
             highlightActiveLineGutter: true,
