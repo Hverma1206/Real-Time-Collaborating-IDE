@@ -9,11 +9,11 @@ export default function Client({ username, role, isAdmin, currentUserIsAdmin, on
   const isCurrentUser = username === currentUsername;
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      alignItems: 'center', 
-      marginBottom: '12px', 
-      justifyContent: 'space-between', 
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      marginBottom: '12px',
+      justifyContent: 'space-between',
       width: '100%',
       backgroundColor: 'rgba(255, 255, 255, 0.05)',
       padding: '8px 12px',
@@ -32,14 +32,14 @@ export default function Client({ username, role, isAdmin, currentUserIsAdmin, on
           {username.charAt(0).toUpperCase()}
         </Avatar>
         <div>
-          <div style={{ 
+          <div style={{
             color: '#fff',
             fontWeight: '500',
             fontSize: '14px'
           }}>
             {username}
             {isAdmin && (
-              <span style={{ 
+              <span style={{
                 marginLeft: '8px',
                 backgroundColor: '#4CAF50',
                 color: 'white',
@@ -51,7 +51,7 @@ export default function Client({ username, role, isAdmin, currentUserIsAdmin, on
               </span>
             )}
           </div>
-          <small style={{ 
+          <small style={{
             color: '#888',
             fontSize: '12px',
             display: 'flex',
@@ -64,16 +64,16 @@ export default function Client({ username, role, isAdmin, currentUserIsAdmin, on
               borderRadius: '50%',
               backgroundColor: role === 'writer' ? '#4CAF50' : '#FFA000',
               display: 'inline-block'
-            }}/>
+            }} />
             {role}
           </small>
         </div>
       </div>
-      
+
       {currentUserIsAdmin && !isCurrentUser && (
         <Select
           defaultValue={role}
-          style={{ 
+          style={{
             width: 100,
             marginLeft: '8px'
           }}

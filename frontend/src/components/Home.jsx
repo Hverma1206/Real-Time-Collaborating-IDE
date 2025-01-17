@@ -25,7 +25,7 @@ const Home = () => {
       toast.error("Both fields are required!");
       return;
     }
-    
+
     navigate(`/editor/${values.RoomID}`, {
       state: { username: values.username },
     });
