@@ -1,6 +1,6 @@
 # Real-Time Collaborative IDE
 
-A **real-time collaborative Integrated Development Environment (IDE)** that empowers multiple users to work on the same codebase simultaneously. Built with scalability and performance in mind, this project aims to enhance team productivity by providing seamless collaboration and role-based access control.
+A **real-time collaborative Code Editor** that empowers multiple users to work on the same codebase simultaneously. Built with scalability and performance in mind, this project aims to enhance team productivity by providing seamless collaboration and role-based access control.
 
 ---
 
