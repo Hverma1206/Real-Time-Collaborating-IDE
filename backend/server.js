@@ -4,18 +4,17 @@ const http = require('http');
 const cors = require('cors');
 
 const app = express();
-app.use(cors());  // Add this line
+app.use(cors());  
 
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*",  // More permissive CORS for development
+    origin: "*",  
     methods: ["GET", "POST"],
     credentials: true
   },
 });
 
-// Key variables for role management
 const userSocketMap = {};
 const userRoleMap = {};
 const roomAdmins = {};
@@ -30,7 +29,6 @@ const getAllConnectedClients = (roomId) => {
 };
 
 io.on('connection', (socket) => {
-  // for join the room
   socket.on('join', ({ roomId, username }) => {
     userSocketMap[socket.id] = username;
     const clients = getAllConnectedClients(roomId);
@@ -50,7 +48,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('changeRole', ({ roomId, targetSocketId, newRole }) => {
-    if (roomAdmins[roomId] === socket.id) { // Only admin can change roles
+    if (roomAdmins[roomId] === socket.id) { 
       userRoleMap[targetSocketId] = newRole;
       io.in(roomId).emit('roleChanged', {
         clients: getAllConnectedClients(roomId)
@@ -58,13 +56,11 @@ io.on('connection', (socket) => {
     }
   });
 
-  // for code changes in real time
   socket.on('codeChange', ({ roomId, code }) => {
     socket.to(roomId).emit('codeChange', { code });
   });
 
   socket.on('languageChange', ({ roomId, language, code }) => {
-    // Broadcast to all clients in the room including sender for consistency
     io.in(roomId).emit('languageChange', { language });
     socket.to(roomId).emit('codeChange', { code });
   });
@@ -76,7 +72,6 @@ io.on('connection', (socket) => {
     delete userSocketMap[socket.id];
     delete userRoleMap[socket.id];
 
-    // Check if the leaving user was admin
     if (roomAdmins[roomId] === socket.id) {
       delete roomAdmins[roomId];
     }
@@ -86,11 +81,10 @@ io.on('connection', (socket) => {
 
   socket.on('disconnecting', () => {
     const rooms = Array.from(socket.rooms);
-    const roomId = rooms[1]; // Second item is the room ID
+    const roomId = rooms[1]; 
     const username = userSocketMap[socket.id];
 
     if (roomId && username) {
-      // Clean up user data
       delete userSocketMap[socket.id];
       delete userRoleMap[socket.id];
 
