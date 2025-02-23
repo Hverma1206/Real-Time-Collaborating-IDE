@@ -18,31 +18,26 @@ const io = new Server(server, {
 const userSocketMap = {};
 const userRoleMap = {};
 const roomAdmins = {};
-const roomMembers = {}
 
 const getAllConnectedClients = (roomId) => {
-  return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map((socketId) => {
-    const chatId = roomMembers[socketId];
-    return ({
-      socketId,
-      username: userSocketMap[chatId],
-      role: roomAdmins[roomId] === chatId ? 'writer' : (userRoleMap[chatId] || 'reader'),
-      isAdmin: roomAdmins[roomId] === chatId,
-      chatId: chatId,
-    });
-  });
+  return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map((socketId) => ({
+    socketId,
+    username: userSocketMap[socketId],
+    role: userRoleMap[socketId] || 'reader',
+    isAdmin: roomAdmins[roomId] === socketId
+  }));
 };
 
 io.on('connection', (socket) => {
-  socket.on('join', ({ roomId, username, chatId }) => {
-    userSocketMap[chatId] = username;
+  socket.on('join', ({ roomId, username }) => {
+    userSocketMap[socket.id] = username;
     const clients = getAllConnectedClients(roomId);
-    roomMembers[socket.id] = chatId;
+
     if (clients.length === 0) {
-      roomAdmins[roomId] = chatId;
-      userRoleMap[chatId] = 'writer';
+      roomAdmins[roomId] = socket.id;
+      userRoleMap[socket.id] = 'writer';
     } else {
-      userRoleMap[chatId] = 'reader';
+      userRoleMap[socket.id] = 'reader';
     }
     socket.join(roomId);
 
@@ -52,9 +47,9 @@ io.on('connection', (socket) => {
     });
   });
 
-  socket.on('changeRole', ({ roomId, targetChatId, newRole, chatId }) => {
-    if (roomAdmins[roomId] === chatId) {
-      userRoleMap[targetChatId] = newRole;
+  socket.on('changeRole', ({ roomId, targetSocketId, newRole }) => {
+    if (roomAdmins[roomId] === socket.id) { 
+      userRoleMap[targetSocketId] = newRole;
       io.in(roomId).emit('roleChanged', {
         clients: getAllConnectedClients(roomId)
       });

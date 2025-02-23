@@ -16,15 +16,14 @@ export default function EditorPage() {
   const location = useLocation();
   const { roomId } = useParams();
   const navigate = useNavigate();
-  const username = sessionStorage.getItem('rtc-username');
-  const chatId = sessionStorage.getItem('rtc-uuid');
+  const username = location.state?.username;
 
   const [clients, setClients] = useState([]);
   const [role, setRole] = useState('reader'); // Track the role of the current user
   const [isAdmin, setIsAdmin] = useState(false);
-  const [adminChatId, setAdminChatId] = useState('');
+
   useEffect(() => {
-    if (!username || !chatId) {
+    if (!username) {
       toast.error('Username is missing, redirecting to the home page.');
       setTimeout(() => navigate('/'), 0);
     }
@@ -36,12 +35,14 @@ export default function EditorPage() {
         socketRef.current = await initSocket();
         
         const storedAdmin = JSON.parse(localStorage.getItem('room_admin') || '{}');
+        const isOriginalAdmin = storedAdmin.roomId === roomId && 
+                              storedAdmin.username === username;
 
         socketRef.current.on('connect', () => {
           socketRef.current.emit('join', { 
             roomId, 
             username,
-            chatId,
+            isOriginalAdmin 
           });
         });
 
@@ -52,7 +53,6 @@ export default function EditorPage() {
             if (currentUser) {
               setRole(currentUser.role);
               setIsAdmin(currentUser.isAdmin || data.adminUser === username);
-              setAdminChatId(currentUser.chatId);
             }
           }
         });
@@ -103,9 +103,9 @@ export default function EditorPage() {
     console.log('Current Room ID:', roomId);
   }, [roomId]);
 
-  const handleRoleChange = (targetChatId, newRole) => {
+  const handleRoleChange = (clientSocketId, newRole) => {
     if (isAdmin) {
-      socketRef.current.emit('changeRole', { roomId, targetChatId, newRole, chatId: adminChatId });
+      socketRef.current.emit('changeRole', { roomId, targetSocketId: clientSocketId, newRole });
     }
   };
 
@@ -189,11 +189,7 @@ export default function EditorPage() {
           </div>
           <Divider style={{ backgroundColor: '#3a3a3a' }} />
           <div className="member-avatar">
-            {clients?.sort((a, b) => {
-                if (a.isAdmin && !b.isAdmin) return -1;
-                if (!a.isAdmin && b.isAdmin) return 1;
-                return 0;
-              })?.map((client) => (
+            {clients.map((client) => (
               <div key={client.socketId} style={{ display: 'flex', alignItems: 'center' }}>
                 <Client 
                   username={client.username} 
@@ -201,7 +197,6 @@ export default function EditorPage() {
                   isAdmin={client.isAdmin}
                   currentUserIsAdmin={isAdmin}
                   onRoleChange={handleRoleChange}
-                  chatId={client.chatId}
                   socketId={client.socketId}
                   currentUsername={username}  
                 />
