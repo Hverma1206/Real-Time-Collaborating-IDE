@@ -18,13 +18,14 @@ const io = new Server(server, {
 const userSocketMap = {};
 const userRoleMap = {};
 const roomAdmins = {};
+const roomAdminUsers = {}; // New object to track admin by username
 
 const getAllConnectedClients = (roomId) => {
   return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map((socketId) => ({
     socketId,
     username: userSocketMap[socketId],
     role: userRoleMap[socketId] || 'reader',
-    isAdmin: roomAdmins[roomId] === socketId
+    isAdmin: roomAdminUsers[roomId] === userSocketMap[socketId]
   }));
 };
 
@@ -34,10 +35,18 @@ io.on('connection', (socket) => {
     const clients = getAllConnectedClients(roomId);
 
     if (clients.length === 0) {
+      // First user becomes admin
+      roomAdminUsers[roomId] = username;
       roomAdmins[roomId] = socket.id;
       userRoleMap[socket.id] = 'writer';
     } else {
-      userRoleMap[socket.id] = 'reader';
+      // Check if this user was the admin
+      if (roomAdminUsers[roomId] === username) {
+        roomAdmins[roomId] = socket.id;
+        userRoleMap[socket.id] = 'writer';
+      } else {
+        userRoleMap[socket.id] = 'reader';
+      }
     }
     socket.join(roomId);
 
@@ -65,7 +74,6 @@ io.on('connection', (socket) => {
     socket.to(roomId).emit('codeChange', { code });
   });
 
-
   socket.on('leave', ({ roomId, username }) => {
     socket.leave(roomId);
     const user = username;
@@ -74,6 +82,12 @@ io.on('connection', (socket) => {
 
     if (roomAdmins[roomId] === socket.id) {
       delete roomAdmins[roomId];
+      // Only delete roomAdminUsers if the admin is actually leaving, not refreshing
+      if (!Array.from(io.sockets.adapter.rooms.get(roomId) || []).some(
+        socketId => userSocketMap[socketId] === username
+      )) {
+        delete roomAdminUsers[roomId];
+      }
     }
 
     io.in(roomId).emit('left', { username: user });
@@ -90,13 +104,18 @@ io.on('connection', (socket) => {
 
       if (roomAdmins[roomId] === socket.id) {
         delete roomAdmins[roomId];
+        // Only delete roomAdminUsers if no other socket with same username exists
+        if (!Array.from(io.sockets.adapter.rooms.get(roomId) || []).some(
+          socketId => userSocketMap[socketId] === username
+        )) {
+          delete roomAdminUsers[roomId];
+        }
       }
 
       io.in(roomId).emit('disconnected', { username });
     }
   });
 })
-
 
 const PORT = process.env.PORT || 5000;
 
