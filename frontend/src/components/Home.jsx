@@ -25,8 +25,7 @@ const Home = () => {
       toast.error("Both fields are required!");
       return;
     }
-    sessionStorage.setItem('rtc-username', values.username);
-    sessionStorage.setItem('rtc-uuid', uuid());
+
     navigate(`/editor/${values.RoomID}`, {
       state: { username: values.username },
     });

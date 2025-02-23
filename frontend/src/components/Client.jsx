@@ -5,7 +5,7 @@ import ColorHash from 'color-hash';
 const { Option } = Select;
 const colorHash = new ColorHash();
 
-export default function Client({ username, role, isAdmin, currentUserIsAdmin, onRoleChange, socketId, currentUsername, chatId }) {
+export default function Client({ username, role, isAdmin, currentUserIsAdmin, onRoleChange, socketId, currentUsername }) {
   const isCurrentUser = username === currentUsername;
 
   return (
@@ -77,7 +77,7 @@ export default function Client({ username, role, isAdmin, currentUserIsAdmin, on
             width: 100,
             marginLeft: '8px'
           }}
-          onChange={(newRole) => onRoleChange(chatId, newRole)}
+          onChange={(newRole) => onRoleChange(socketId, newRole)}
           className="role-select"
           popupClassName="role-select"
           dropdownStyle={{
