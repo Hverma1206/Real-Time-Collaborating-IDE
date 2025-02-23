@@ -74,6 +74,15 @@ io.on('connection', (socket) => {
     socket.to(roomId).emit('codeChange', { code });
   });
 
+  socket.on('sendMessage', ({ roomId, message, sender, timestamp }) => {
+    // Broadcast the message to all clients in the room, including sender
+    io.in(roomId).emit('receiveMessage', {
+      message,
+      sender,
+      timestamp
+    });
+  });
+
   socket.on('leave', ({ roomId, username }) => {
     socket.leave(roomId);
     const user = username;
