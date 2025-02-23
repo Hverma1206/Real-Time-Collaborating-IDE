@@ -1,53 +1,89 @@
-# Real-Time Collaborative IDE
+# Real-Time Collaborating IDE
 
-A **real-time collaborative Code Editor** that empowers multiple users to work on the same codebase simultaneously. Built with scalability and performance in mind, this project aims to enhance team productivity by providing seamless collaboration and role-based access control.
+This repository contains the full-stack implementation of a real-time collaborative IDE. The project is divided into two main parts:
 
----
+- **Backend**: A Node.js-based server that handles real-time collaboration via WebSockets.
+- **Frontend**: A React.js application providing a collaborative code editor interface.
 
-## 🚀 Features
+## Features
 
-### 🔄 Real-Time Collaboration
-- Instant synchronization of code changes for all participants.
-- Live cursors and edits visible in real-time.
+- Real-time code synchronization
+- Multiple user collaboration
+- Role-based access control (Reader/Writer)
+- Auto-admin assignment for the first user
+- Language switching support
 
-### 🔐 Role-Based Access Control
-- Assign roles such as **Admin**, **Editor**, or **Viewer**.
-- Granular control over who can edit or view the workspace.
+## Tech Stack
 
-### 🖥️ Code Execution
-- Supports running and testing code in supported languages directly within the IDE.
+- **Backend**: Node.js, Express.js, Socket.IO
+- **Frontend**: React.js, Socket.IO Client
 
-### ☁️ Scalable and Secure
-- **Deployed on AWS**, ensuring high availability and performance.
-- Secure user authentication and encrypted communication.
+## Prerequisites
 
----
+- Node.js (v14 or higher)
+- npm or yarn
+- Git
 
-## 🛠️ Tech Stack
+## Setup
 
-### Frontend:
-- **React.js**: For building a responsive and interactive user interface.
-- 
-### Backend:
-- **Node.js** & **Express.js**: For handling server-side logic and API endpoints.
-- **Socket.IO**: For real-time communication.
+### Clone the Repository
 
-### Deployment:
-- **AWS**: 
-  - **EC2**: For hosting the backend server.
-  - **S3**: For serving static assets.
-  - **IAM Roles**: For secure and managed access.
+```bash
+git clone https://github.com/yourusername/Real-Time-Collaborating-IDE.git
+cd Real-Time-Collaborating-IDE
+```
 
----
+### Backend Setup
 
-## 📦 Installation
-
-### Prerequisites:
-- Node.js (v16 or later)
-- AWS account (for deployment)
-
-### Steps to Run Locally:
-1. Clone the repository:
+1. Navigate to the backend folder:
    ```bash
-   git clone [https://github.com/your-username/real-time-collaboratiing-IDE.git](https://github.com/Hverma1206/Real-Time-Collaborating-IDE/new/master?filename=README.md)
-   cd Real-Time-collaborating-IDE
+   cd backend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the server:
+   ```bash
+   npm run dev  # Development mode
+   npm start    # Production mode
+   ```
+
+### Frontend Setup
+
+1. Navigate to the frontend folder:
+   ```bash
+   cd ../frontend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm start
+   ```
+
+The frontend will run at `http://localhost:3000`, and the backend server will run at `http://localhost:5000` (default port).
+
+## Project Structure
+
+```
+Real-Time-Collaborating-IDE/
+│── backend/       # Backend server files
+│── frontend/      # Frontend application files
+│── README.md      # Project documentation
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/new-feature`)
+3. Commit your changes (`git commit -m 'Add new feature'`)
+4. Push to the branch (`git push origin feature/new-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
