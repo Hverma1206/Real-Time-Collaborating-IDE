@@ -34,15 +34,15 @@ export default function EditorPage() {
       try {
         socketRef.current = await initSocket();
         
-        const storedAdmin = JSON.parse(localStorage.getItem('room_admin') || '{}');
-        const isOriginalAdmin = storedAdmin.roomId === roomId && 
-                              storedAdmin.username === username;
+        // Check if this user was the admin
+        const storedAdmin = JSON.parse(localStorage.getItem(`admin_${roomId}`) || '{}');
+        const isStoredAdmin = storedAdmin.username === username;
 
         socketRef.current.on('connect', () => {
           socketRef.current.emit('join', { 
             roomId, 
             username,
-            isOriginalAdmin 
+            isAdmin: isStoredAdmin  // Pass admin status to server
           });
         });
 
@@ -52,7 +52,15 @@ export default function EditorPage() {
             const currentUser = data.clients.find(c => c.username === username);
             if (currentUser) {
               setRole(currentUser.role);
-              setIsAdmin(currentUser.isAdmin || data.adminUser === username);
+              setIsAdmin(currentUser.isAdmin);
+              
+              // Store admin info if this user is admin
+              if (currentUser.isAdmin) {
+                localStorage.setItem(`admin_${roomId}`, JSON.stringify({
+                  username,
+                  roomId
+                }));
+              }
             }
           }
         });
@@ -90,11 +98,16 @@ export default function EditorPage() {
 
     init();
 
+    // Cleanup localStorage on unmount
     return () => {
       if (socketRef.current) {
+        socketRef.current.off('joined');
         socketRef.current.off('left');
         socketRef.current.off('disconnected');
         socketRef.current.disconnect();
+        if (!isAdmin) {
+          localStorage.removeItem(`admin_${roomId}`);
+        }
       }
     };
   }, [navigate, roomId, username]);
