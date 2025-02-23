@@ -2,102 +2,68 @@ const express = require('express');
 const { Server } = require('socket.io');
 const http = require('http');
 const cors = require('cors');
+const socketConfig = require('./config/socket.config');
+const { EVENTS, ROLES } = require('./constants/socket.constants');
+const RoomService = require('./services/room.service');
 
 const app = express();
-app.use(cors());  
+app.use(cors());
 
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: "*",  
-    methods: ["GET", "POST"],
-    credentials: true
-  },
-});
+const io = new Server(server, socketConfig);
+const roomService = new RoomService(io);
 
-const userSocketMap = {};
-const userRoleMap = {};
-const roomAdmins = {};
-
-const getAllConnectedClients = (roomId) => {
-  return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map((socketId) => ({
-    socketId,
-    username: userSocketMap[socketId],
-    role: userRoleMap[socketId] || 'reader',
-    isAdmin: roomAdmins[roomId] === socketId
-  }));
-};
-
-io.on('connection', (socket) => {
-  socket.on('join', ({ roomId, username }) => {
-    userSocketMap[socket.id] = username;
-    const clients = getAllConnectedClients(roomId);
-
-    if (clients.length === 0) {
-      roomAdmins[roomId] = socket.id;
-      userRoleMap[socket.id] = 'writer';
-    } else {
-      userRoleMap[socket.id] = 'reader';
-    }
+io.on(EVENTS.CONNECTION, (socket) => {
+  socket.on(EVENTS.JOIN, ({ roomId, username }) => {
     socket.join(roomId);
-
-    io.in(roomId).emit('joined', {
-      clients: getAllConnectedClients(roomId),
+    const clients = roomService.addUser(socket.id, roomId, username);
+    io.in(roomId).emit(EVENTS.JOINED, {
+      clients,
       joinedUser: username
     });
   });
 
-  socket.on('changeRole', ({ roomId, targetSocketId, newRole }) => {
-    if (roomAdmins[roomId] === socket.id) { 
-      userRoleMap[targetSocketId] = newRole;
-      io.in(roomId).emit('roleChanged', {
-        clients: getAllConnectedClients(roomId)
+  socket.on(EVENTS.CHANGE_ROLE, ({ roomId, targetSocketId, newRole }) => {
+    if (roomService.changeUserRole(roomId, socket.id, targetSocketId, newRole)) {
+      io.in(roomId).emit(EVENTS.ROLE_CHANGED, {
+        clients: roomService.getAllConnectedClients(roomId)
       });
     }
   });
 
-  socket.on('codeChange', ({ roomId, code }) => {
-    socket.to(roomId).emit('codeChange', { code });
+  socket.on(EVENTS.CODE_CHANGE, ({ roomId, code }) => {
+    socket.to(roomId).emit(EVENTS.CODE_CHANGE, { code });
   });
 
-  socket.on('languageChange', ({ roomId, language, code }) => {
-    io.in(roomId).emit('languageChange', { language });
-    socket.to(roomId).emit('codeChange', { code });
+  socket.on(EVENTS.LANGUAGE_CHANGE, ({ roomId, language, code }) => {
+    io.in(roomId).emit(EVENTS.LANGUAGE_CHANGE, { language });
+    socket.to(roomId).emit(EVENTS.CODE_CHANGE, { code });
   });
 
-
-  socket.on('leave', ({ roomId, username }) => {
+  socket.on(EVENTS.LEAVE, ({ roomId }) => {
     socket.leave(roomId);
-    const user = username;
-    delete userSocketMap[socket.id];
-    delete userRoleMap[socket.id];
-
-    if (roomAdmins[roomId] === socket.id) {
-      delete roomAdmins[roomId];
-    }
-
-    io.in(roomId).emit('left', { username: user });
+    const username = roomService.removeUser(socket.id, roomId);
+    io.in(roomId).emit(EVENTS.LEFT, { username });
   });
 
-  socket.on('disconnecting', () => {
-    const rooms = Array.from(socket.rooms);
-    const roomId = rooms[1]; 
-    const username = userSocketMap[socket.id];
-
-    if (roomId && username) {
-      delete userSocketMap[socket.id];
-      delete userRoleMap[socket.id];
-
-      if (roomAdmins[roomId] === socket.id) {
-        delete roomAdmins[roomId];
+  // Replace the disconnect event with disconnecting
+  socket.on(EVENTS.DISCONNECTING, () => {
+    const rooms = [...socket.rooms];
+    rooms.forEach(roomId => {
+      if (roomId !== socket.id) {  // Skip the default room
+        const username = roomService.removeUser(socket.id, roomId);
+        if (username) {
+          io.to(roomId).emit(EVENTS.LEFT, { username });
+        }
       }
-
-      io.in(roomId).emit('disconnected', { username });
-    }
+    });
   });
-})
 
+  // Add disconnect event to clean up any remaining state
+  socket.on('disconnect', () => {
+    roomService.cleanupUserState(socket.id);
+  });
+});
 
 const PORT = process.env.PORT || 5000;
-
-server.listen(PORT, () => console.log(`Server is running on port ${PORT}`))
+server.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
