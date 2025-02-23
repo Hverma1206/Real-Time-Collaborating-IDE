@@ -2,12 +2,9 @@ const express = require('express');
 const { Server } = require('socket.io');
 const http = require('http');
 const cors = require('cors');
-const socketConfig = require('./config/socket.config');
-const { EVENTS, ROLES } = require('./constants/socket.constants');
-const RoomService = require('./services/room.service');
 
 const app = express();
-app.use(cors());
+app.use(cors());  
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -43,9 +40,9 @@ io.on('connection', (socket) => {
       userRoleMap[socket.id] = 'reader';
     }
     socket.join(roomId);
-    const clients = roomService.addUser(socket.id, roomId, username);
-    io.in(roomId).emit(EVENTS.JOINED, {
-      clients,
+
+    io.in(roomId).emit('joined', {
+      clients: getAllConnectedClients(roomId),
       joinedUser: username
     });
   });
@@ -59,39 +56,48 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on(EVENTS.CODE_CHANGE, ({ roomId, code }) => {
-    socket.to(roomId).emit(EVENTS.CODE_CHANGE, { code });
+  socket.on('codeChange', ({ roomId, code }) => {
+    socket.to(roomId).emit('codeChange', { code });
   });
 
-  socket.on(EVENTS.LANGUAGE_CHANGE, ({ roomId, language, code }) => {
-    io.in(roomId).emit(EVENTS.LANGUAGE_CHANGE, { language });
-    socket.to(roomId).emit(EVENTS.CODE_CHANGE, { code });
+  socket.on('languageChange', ({ roomId, language, code }) => {
+    io.in(roomId).emit('languageChange', { language });
+    socket.to(roomId).emit('codeChange', { code });
   });
 
-  socket.on(EVENTS.LEAVE, ({ roomId }) => {
+
+  socket.on('leave', ({ roomId, username }) => {
     socket.leave(roomId);
-    const username = roomService.removeUser(socket.id, roomId);
-    io.in(roomId).emit(EVENTS.LEFT, { username });
+    const user = username;
+    delete userSocketMap[socket.id];
+    delete userRoleMap[socket.id];
+
+    if (roomAdmins[roomId] === socket.id) {
+      delete roomAdmins[roomId];
+    }
+
+    io.in(roomId).emit('left', { username: user });
   });
 
-  // Replace the disconnect event with disconnecting
-  socket.on(EVENTS.DISCONNECTING, () => {
-    const rooms = [...socket.rooms];
-    rooms.forEach(roomId => {
-      if (roomId !== socket.id) {  // Skip the default room
-        const username = roomService.removeUser(socket.id, roomId);
-        if (username) {
-          io.to(roomId).emit(EVENTS.LEFT, { username });
-        }
+  socket.on('disconnecting', () => {
+    const rooms = Array.from(socket.rooms);
+    const roomId = rooms[1]; 
+    const username = userSocketMap[socket.id];
+
+    if (roomId && username) {
+      delete userSocketMap[socket.id];
+      delete userRoleMap[socket.id];
+
+      if (roomAdmins[roomId] === socket.id) {
+        delete roomAdmins[roomId];
       }
-    });
-  });
 
-  // Add disconnect event to clean up any remaining state
-  socket.on('disconnect', () => {
-    roomService.cleanupUserState(socket.id);
+      io.in(roomId).emit('disconnected', { username });
+    }
   });
-});
+})
+
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
+
+server.listen(PORT, () => console.log(`Server is running on port ${PORT}`))
