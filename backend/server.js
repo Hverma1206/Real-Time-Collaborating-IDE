@@ -10,11 +10,38 @@ const app = express();
 app.use(cors());
 
 const server = http.createServer(app);
-const io = new Server(server, socketConfig);
-const roomService = new RoomService(io);
+const io = new Server(server, {
+  cors: {
+    origin: "*",  
+    methods: ["GET", "POST"],
+    credentials: true
+  },
+});
 
-io.on(EVENTS.CONNECTION, (socket) => {
-  socket.on(EVENTS.JOIN, ({ roomId, username }) => {
+const userSocketMap = {};
+const userRoleMap = {};
+const roomAdmins = {};
+
+const getAllConnectedClients = (roomId) => {
+  return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map((socketId) => ({
+    socketId,
+    username: userSocketMap[socketId],
+    role: userRoleMap[socketId] || 'reader',
+    isAdmin: roomAdmins[roomId] === socketId
+  }));
+};
+
+io.on('connection', (socket) => {
+  socket.on('join', ({ roomId, username }) => {
+    userSocketMap[socket.id] = username;
+    const clients = getAllConnectedClients(roomId);
+
+    if (clients.length === 0) {
+      roomAdmins[roomId] = socket.id;
+      userRoleMap[socket.id] = 'writer';
+    } else {
+      userRoleMap[socket.id] = 'reader';
+    }
     socket.join(roomId);
     const clients = roomService.addUser(socket.id, roomId, username);
     io.in(roomId).emit(EVENTS.JOINED, {
@@ -23,10 +50,11 @@ io.on(EVENTS.CONNECTION, (socket) => {
     });
   });
 
-  socket.on(EVENTS.CHANGE_ROLE, ({ roomId, targetSocketId, newRole }) => {
-    if (roomService.changeUserRole(roomId, socket.id, targetSocketId, newRole)) {
-      io.in(roomId).emit(EVENTS.ROLE_CHANGED, {
-        clients: roomService.getAllConnectedClients(roomId)
+  socket.on('changeRole', ({ roomId, targetSocketId, newRole }) => {
+    if (roomAdmins[roomId] === socket.id) { 
+      userRoleMap[targetSocketId] = newRole;
+      io.in(roomId).emit('roleChanged', {
+        clients: getAllConnectedClients(roomId)
       });
     }
   });
