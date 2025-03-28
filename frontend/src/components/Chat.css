@@ -33,6 +33,7 @@
     border-radius: 8px;
     max-width: 85%;
     word-break: break-word;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 
 .message.own-message {
@@ -98,6 +99,101 @@
     border-color: #388E3C !important;
 }
 
+.send-button:disabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+}
+
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: #fff;
+}
+
+.date-separator {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 12px 0;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+}
+
+.date-separator::before,
+.date-separator::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #3a3a3a;
+}
+
+.date-separator::before {
+    margin-right: 10px;
+}
+
+.date-separator::after {
+    margin-left: 10px;
+}
+
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background-color: rgba(43, 43, 43, 0.5);
+    margin-top: 8px;
+    align-self: flex-start;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.typing-animation {
+    display: flex;
+    margin-right: 8px;
+}
+
+.typing-animation span {
+    height: 6px;
+    width: 6px;
+    margin: 0 1px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    display: inline-block;
+    animation: bounce 1.3s ease infinite;
+}
+
+.typing-animation span:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.typing-animation span:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.chat-error {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: #ff6b6b;
+    padding: 20px;
+    text-align: center;
+    font-size: 16px;
+}
+
+.empty-chat-message {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 16px;
+    text-align: center;
+    padding: 20px;
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -106,5 +202,14 @@
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@keyframes bounce {
+    0%, 60%, 100% {
+        transform: translateY(0);
+    }
+    30% {
+        transform: translateY(-4px);
     }
 }
