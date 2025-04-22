@@ -6,7 +6,7 @@ import Editor from './Editor.jsx';
 import { initSocket } from '../socket.js';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import Chat from './Chat';
+// import Chat from './Chat';
 
 const { Sider, Content } = Layout;
 const { Title, Text } = Typography;
@@ -256,6 +256,7 @@ export default function EditorPage() {
             <Editor socketRef={socketRef} roomId={roomId} userRole={role} />
           </div>
 
+          {/* Chat component commented out
           <div
             style={{
               width: '300px',
@@ -271,6 +272,7 @@ export default function EditorPage() {
             <h3 style={{ color: '#fff', marginBottom: '16px' }}>Chat</h3>
             <Chat socketRef={socketRef} roomId={roomId} username={username} />
           </div>
+          */}
         </Content>
       </Layout>
     </Layout>

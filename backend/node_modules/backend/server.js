@@ -75,7 +75,6 @@ io.on('connection', (socket) => {
   });
 
   socket.on('sendMessage', ({ roomId, message, sender, timestamp }) => {
-    // Broadcast the message to all clients in the room, including sender
     io.in(roomId).emit('receiveMessage', {
       message,
       sender,
