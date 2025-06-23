@@ -46,7 +46,6 @@ function EditorComponent({ socketRef, roomId, userRole }) {
     if (userRole !== 'writer') {
       toast.error('You do not have permission to edit');
       setCode(code);
-
       return;
     }
 
@@ -64,15 +63,15 @@ function EditorComponent({ socketRef, roomId, userRole }) {
   const getStartingSnippet = (language) => {
     switch (language) {
       case 'javascript':
-        return `// JavaScript Snippet\nfunction example() {\n //Your code here \n}`;
+        return `function example() {\n //Your code here \n}`;
       case 'python':
-        return `# Python Snippet\ndef example():\n #Your code here`;
+        return `def example():\n #Your code here`;
       case 'c++':
-        return `// C++ Snippet\n#include <iostream>\nint main() {\n  std::cout << "Hello World" << std::endl;\n  return 0;\n}`;
+        return `#include <iostream>\nint main() {\n  std::cout << "Hello World" << std::endl;\n  return 0;\n}`;
       case 'java':
-        return `// Java Snippet\npublic class Main {\n  public static void main(String[] args) {\n    //Your code here \n  }\n}`;
+        return `public class Main {\n  public static void main(String[] args) {\n    //Your code here \n  }\n}`;
       default:
-        return '// C++ Snippet \n using namespace std;\nint main() {\n //Your code here \n}';
+        return `using namespace std;\nint main() {\n //Your code here \n}`;
     }
   };
 
@@ -102,10 +101,8 @@ function EditorComponent({ socketRef, roomId, userRole }) {
           height="100%"
           theme={dracula}
           extensions={[languageExtensions[selectedLanguage]()]}
-
           onChange={handleCodeChange}
           editable={userRole === 'writer'}
-
           readOnly={userRole !== 'writer'}
           basicSetup={{
             lineNumbers: true,

@@ -6,7 +6,6 @@ import Editor from './Editor.jsx';
 import { initSocket } from '../socket.js';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-// import Chat from './Chat';
 
 const { Sider, Content } = Layout;
 const { Title, Text } = Typography;
@@ -20,54 +19,47 @@ export default function EditorPage() {
   const username = location.state?.username;
 
   const [clients, setClients] = useState([]);
-  const [role, setRole] = useState('reader'); // Track the role of the current user
+  const [role, setRole] = useState('reader');
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (!username) {
       toast.error('Username is missing, redirecting to the home page.');
       setTimeout(() => navigate('/'), 0);
+      return;
     }
-  }, [username, navigate]);
 
-  useEffect(() => {
+    if (!roomId) {
+      toast.error('Room ID is missing, redirecting to the home page.');
+      setTimeout(() => navigate('/'), 0);
+      return;
+    }
+
     const init = async () => {
       try {
         socketRef.current = await initSocket();
         
-        // Check if this user was the admin
-        const storedAdmin = JSON.parse(localStorage.getItem(`admin_${roomId}`) || '{}');
-        const isStoredAdmin = storedAdmin.username === username;
-
         socketRef.current.on('connect', () => {
-          socketRef.current.emit('join', { 
-            roomId, 
-            username,
-            isAdmin: isStoredAdmin  // Pass admin status to server
-          });
+          console.log(`Socket connected with ID: ${socketRef.current.id}`);
+          console.log(`Joining room: ${roomId} as ${username}`);
+          socketRef.current.emit('join', { roomId, username });
         });
 
         socketRef.current.on('joined', (data) => {
+          console.log(`Joined event received in room ${roomId}:`, data);
           if (data && data.clients) {
             setClients(data.clients);
+            
             const currentUser = data.clients.find(c => c.username === username);
             if (currentUser) {
               setRole(currentUser.role);
               setIsAdmin(currentUser.isAdmin);
-              
-              // Store admin info if this user is admin
-              if (currentUser.isAdmin) {
-                localStorage.setItem(`admin_${roomId}`, JSON.stringify({
-                  username,
-                  roomId
-                }));
-              }
+            }
+            
+            if (data.joinedUser !== username) {
+              toast.success(`${data.joinedUser} joined the room`);
             }
           }
-        });
-
-        socketRef.current.on('updateClients', ({ clients }) => {
-          setClients(clients); 
         });
 
         socketRef.current.on('roleChanged', ({ clients }) => {
@@ -77,12 +69,28 @@ export default function EditorPage() {
             setRole(currentUser.role);
             if (currentUser.role === 'reader') {
               toast.error('You are now in read-only mode');
+            } else if (currentUser.role === 'writer') {
+              toast.success('You can now edit the document');
             }
           }
         });
 
-        socketRef.current.on('left', ({ username: leftUser }) => {
-          setClients(prev => prev.filter(client => client.username !== leftUser));
+        socketRef.current.on('left', ({ username: leftUser, clients: updatedClients }) => {
+          if (updatedClients) {
+            setClients(updatedClients);
+            
+            const currentUser = updatedClients.find(c => c.username === username);
+            if (currentUser) {
+              setRole(currentUser.role);
+              setIsAdmin(currentUser.isAdmin);
+              
+              if (currentUser.isAdmin && !isAdmin) {
+                toast.success('You are now the admin of this room');
+              }
+            }
+          } else {
+            setClients(prev => prev.filter(client => client.username !== leftUser));
+          }
           toast.success(`${leftUser} left the room`);
         });
 
@@ -92,6 +100,7 @@ export default function EditorPage() {
         });
 
       } catch (error) {
+        console.error('Socket initialization error:', error);
         toast.error('Failed to connect to the server.');
         navigate('/');
       }
@@ -99,48 +108,36 @@ export default function EditorPage() {
 
     init();
 
-    // Cleanup localStorage on unmount
     return () => {
       if (socketRef.current) {
-        socketRef.current.off('joined');
-        socketRef.current.off('left');
-        socketRef.current.off('disconnected');
+        console.log(`Leaving room: ${roomId}`);
+        socketRef.current.emit('leave', { roomId, username });
         socketRef.current.disconnect();
-        if (!isAdmin) {
-          localStorage.removeItem(`admin_${roomId}`);
-        }
+        localStorage.removeItem('socketInstance');
       }
     };
   }, [navigate, roomId, username]);
 
-  useEffect(() => {
-    console.log('Current Room ID:', roomId);
-  }, [roomId]);
-
   const handleRoleChange = (clientSocketId, newRole) => {
-    if (isAdmin) {
+    if (isAdmin && socketRef.current) {
+      console.log(`Changing role for ${clientSocketId} to ${newRole} in room ${roomId}`);
       socketRef.current.emit('changeRole', { roomId, targetSocketId: clientSocketId, newRole });
     }
   };
 
   const handleLeaveRoom = () => {
     if (socketRef.current) {
+      console.log(`Manually leaving room: ${roomId}`);
       socketRef.current.emit('leave', { roomId, username });
+      socketRef.current.disconnect();
+      localStorage.removeItem('socketInstance');
       navigate('/');
     }
   };
 
   const handleCopyRoomId = async () => {
     try {
-      const currentPath = window.location.pathname;
-      const urlRoomId = currentPath.split('/editor/')[1];
-      
-      if (!urlRoomId) {
-        toast.error('Room ID not found');
-        return;
-      }
-      
-      await navigator.clipboard.writeText(urlRoomId);
+      await navigator.clipboard.writeText(roomId);
       toast.success('Room ID copied successfully!');
     } catch (err) {
       toast.error('Failed to copy room ID');
@@ -198,7 +195,7 @@ export default function EditorPage() {
                 wordBreak: 'break-all'
               }}
             >
-              {window.location.pathname.split('/editor/')[1]}
+              {roomId}
             </Text>
           </div>
           <Divider style={{ backgroundColor: '#3a3a3a' }} />
@@ -255,24 +252,6 @@ export default function EditorPage() {
           >
             <Editor socketRef={socketRef} roomId={roomId} userRole={role} />
           </div>
-
-          {/* Chat component commented out
-          <div
-            style={{
-              width: '300px',
-              background: '#282C34',
-              height: 'calc(100vh - 48px)',
-              borderRadius: '10px',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-              padding: '20px',
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            <h3 style={{ color: '#fff', marginBottom: '16px' }}>Chat</h3>
-            <Chat socketRef={socketRef} roomId={roomId} username={username} />
-          </div>
-          */}
         </Content>
       </Layout>
     </Layout>

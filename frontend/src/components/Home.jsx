@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Home.css';
 import { v4 as uuid } from 'uuid';
 import { useNavigate } from 'react-router-dom';
 import { Form, Input, Button, Typography } from 'antd';
 import toast from 'react-hot-toast';
+import { initSocket } from '../socket.js';
 
 const { Title, Text } = Typography;
 
@@ -11,6 +12,19 @@ const Home = () => {
   const [roomId, setRoomId] = useState("");
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    const cleanupSocket = async () => {
+      try {
+        localStorage.removeItem('socketInstance');
+        console.log('Home: Cleaned up any existing socket connection');
+      } catch (err) {
+        console.error('Error cleaning up socket:', err);
+      }
+    };
+    
+    cleanupSocket();
+  }, []);
 
   const generateRoomId = (e) => {
     e.preventDefault();
